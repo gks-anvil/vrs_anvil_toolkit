@@ -312,9 +312,8 @@ def get_cohort_allele_frequency(
         "type": "CohortAlleleFrequency",
         "label": f"Overall Cohort Allele Frequency for {variant_id}",
         "derivedFrom": {
-            "id": "GREGOR_COMBINED_CONSORTIUM_U07",
+            "id": vcf_path,
             "type": "DataSet",
-            "label": "GREGoR Combined Consortium U07",
             "version": f"Created {datetime.now()}",
         },
         "focusAllele": variant_id,
@@ -322,8 +321,7 @@ def get_cohort_allele_frequency(
         "locusAlleleCount": locus_allele_count,
         "alleleFrequency": allele_frequency,
         "cohort": {
-            "id": "GREGOR_COMBINED_CONSORTIUM_U07",
-            "label": "GREGoR Combined Consortium U07",
+            "id": vcf_path,
         },
         "ancillaryResults": {
             "homozygotes": num_homozygotes,
@@ -333,12 +331,6 @@ def get_cohort_allele_frequency(
     }
 
     return caf_dict
-
-
-def _get_connection(db_location: Path | None) -> sqlite3.Connection:
-    if not db_location:
-        db_location = Path(os.environ.get("VRS_VCF_INDEX"))
-    return sqlite3.connect(db_location)
 
 
 def fetch_by_vrs_ids(
