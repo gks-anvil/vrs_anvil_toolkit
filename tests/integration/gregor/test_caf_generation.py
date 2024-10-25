@@ -5,7 +5,7 @@ import pytest
 from typing import Generator
 from pysam import VariantFile, VariantRecord
 
-from vrs_anvil.evidence import get_cohort_allele_frequency, get_patient_phenotype_index
+from vrs_anvil.evidence import get_cohort_allele_frequency
 
 ############
 # FIXTURES #
@@ -36,27 +36,6 @@ def expected_record_count():
     return 3
 
 
-@pytest.fixture
-def remote_chry_vcf_path():
-    """Return a GS URI to a remote VCF. Currently using annotated chrY GREGoR VCF"""
-
-    return "gs://fc-secure-0b96edf7-d9b1-4ee2-94c9-c458fa44ccb1/gregor_joint_callset/gregor_consortium_u06_sorted_chrY_GRU_VRS.vcf.gz"
-
-
-@pytest.fixture
-def chr3_vcf_path():
-    return "gs://fc-secure-0b96edf7-d9b1-4ee2-94c9-c458fa44ccb1/gregor_joint_callset/gregor_consortium_u06_sorted_chr3_GRU_VRS.vcf.gz"
-
-
-@pytest.fixture()
-def vrs_id_solo_alt(remote_chry_vcf_path):
-    """VRS ID extracted from VCF row with only one alt"""
-
-    for i, record in enumerate(VariantFile(remote_chry_vcf_path)):
-        if i == 10:
-            return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
-
-
 @pytest.fixture()
 def vrs_id_multiple_alts(remote_chry_vcf_path):
     """VRS ID extracted from VCF row with multiple alts"""
@@ -64,15 +43,6 @@ def vrs_id_multiple_alts(remote_chry_vcf_path):
     for i, record in enumerate(VariantFile(remote_chry_vcf_path)):
         if i == 4:
             return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
-
-
-@pytest.fixture()
-def phenotype_table():
-    assert (
-        "PHENOTYPE_TABLE" in os.environ
-    ), "no PHENOTYPE_TABLE bash variable defining the path of the phenotype table, make sure to export"
-
-    return os.environ["PHENOTYPE_TABLE"]
 
 
 def participants(record: VariantRecord) -> Generator[str, None, None]:
@@ -88,7 +58,9 @@ def participants(record: VariantRecord) -> Generator[str, None, None]:
             yield participant
 
 
-def test_remote_vcf(remote_chry_vcf_path, chromosome, start, stop, expected_record_count):
+def test_remote_vcf(
+    remote_chry_vcf_path, chromosome, start, stop, expected_record_count
+):
     """Read a remote vcf file, query a range of alleles, check that at least 1 participant exists for each allele."""
     assert "GCS_OAUTH_TOKEN" in os.environ, (
         "GCS_OAUTH_TOKEN required: "
@@ -152,44 +124,6 @@ def test_allele_counts_first_5_rows(chr3_vcf_path, phenotype_table):
                 caf["locusAlleleCount"] == an
             ), f"row {i} alt {alt_index} has different locus allele counts, expected {an}, got {caf['locusAlleleCount']}"
         if i == 5:
-            break
-
-
-def test_get_phenotypes_from_vcf_row(remote_chry_vcf_path, phenotype_table):
-    """calculate list of unique phenotypes for the first five rows, checking total unique phenotypes the last row"""
-
-    vcf = VariantFile(remote_chry_vcf_path)
-    assert "VRS_Allele_IDs" in vcf.header.info, (
-        "no VRS_Allele_IDs key in INFO found, "
-        "please ensure that this is an VRS annotated VCF"
-    )
-
-    for i, record in enumerate(vcf.fetch()):
-        vrs_ids = record.info["VRS_Allele_IDs"]
-        phenotypes_set = set()
-        patients = [
-            patient
-            for patient, genotype in record.samples.items()
-            if 1 in genotype.allele_indices
-        ]
-        print(f"{record.chrom}-{record.pos}-{record.ref}-{record.alts}")
-
-        print("VRS IDs:", vrs_ids)
-
-        phenotype_index = get_patient_phenotype_index(phenotype_table)
-
-        print("patients:", patients)
-        for patient_id in patients:
-            if patient_id in phenotype_index:
-                phenotypes_set.update(phenotype_index[patient_id])
-        print("len(phenotypes_set):", len(phenotypes_set))
-
-        if i == 4:
-            expected_num_phenotypes = 528
-            assert (
-                len(phenotypes_set) == expected_num_phenotypes
-            ), f"Expected {expected_num_phenotypes} phenotypes, got {len(phenotypes_set)}"
-
             break
 
 
