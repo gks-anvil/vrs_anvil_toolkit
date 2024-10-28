@@ -226,7 +226,7 @@ def get_cohort_allele_frequency(
 
     # get index of participant to phenotypes
     phenotype_index = get_patient_phenotype_index(
-        phenotype_table, cached_dict=phenotype_index_path, as_set=True
+        phenotype_table=phenotype_table, cached_dict=phenotype_index_path, as_set=True
     )
 
     # create cohort, defaults to all patients in VCF
