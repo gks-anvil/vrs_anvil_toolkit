@@ -1,0 +1,4 @@
+*.db
+*.vcf*
+phenotypes.tsv
+phenotypes.csv

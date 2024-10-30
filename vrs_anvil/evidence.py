@@ -100,11 +100,13 @@ def get_patient_phenotype_index(
 def create_patient_phenotype_index(
     phenotype_table: str = None, as_set: bool = False, save_path: str = None
 ) -> dict[str, list | set]:
-    """create index of patient phenotypes
+    """create index from patient to a patient's phenotypes within a Terra environment. If phenotype_table is specified,
+    then it will pull from file rather than from Terra data tables
 
     Args:
         phenotype_table (str, optional): Path to csv/tsv of phenotype data specified by the GREGoR data model.
-            Defaults to pulling from a Terra data table in existing workspace titled "phenotypes".
+            Defaults to pulling from a Terra data table in existing workspace titled "phenotypes" making use
+            of WORKSPACE_NAMESPACE and WORKSPACE_NAME preconfigured in Terra analysis environment
             For more info on the data model, see https://gregorconsortium.org/data-model
         as_set (bool, optional): Whether to store patient phenotypes as a set rather than a list. Defaults to False.
         save_path: path to save the patient index
@@ -121,7 +123,7 @@ def create_patient_phenotype_index(
         for env_key in ["WORKSPACE_NAMESPACE", "WORKSPACE_NAME"]:
             assert (
                 env_key in os.environ
-            ), f"ERROR: No {env_key} key found in environmental variables. Make sure these are set in Terra"
+            ), f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified."
 
         # create dataframe from Terra data table
         # https://github.com/broadinstitute/fiss/blob/master/firecloud/api.py
