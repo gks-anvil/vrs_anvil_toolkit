@@ -310,12 +310,17 @@ def get_cohort_allele_frequency(
     # populate final caf dict
     allele_frequency = focus_allele_count * 1.0 / locus_allele_count
 
+    label = vcf_path
+    if phenotype:
+        label += f" conditioned on {phenotype}"
+
     caf_dict = {
         "type": "CohortAlleleFrequency",
         "label": f"Overall Cohort Allele Frequency for {variant_id}",
         "derivedFrom": {
             "id": vcf_path,
             "type": "DataSet",
+            "label": label,
             "version": f"Created {datetime.now()}",
         },
         "focusAllele": variant_id,
