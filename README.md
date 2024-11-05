@@ -104,13 +104,14 @@ The command line utility supports Google Cloud URIs and running commands in the 
 ## Cohort Allele Frequency Generation
 
 ### Description
-Create a cohort allele frequency object for a given variant, subsettable by participant list, GREGOR-formatted phenotypes, etc.
+Given a variant of interest, Create a cohort allele frequency object, subsettable by participant list and a phenotype code.
 
 ### General Prerequisites
 - Variant ID of interest
 - VCF path to file
   - chr field is prepended with chr (eg `chr1`)
   - genotyping laid out per-patient (eg a row has column `PATIENT_1` with value `0/1`)
+- Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))
 - Access to phenotypes table either through Terra (default) or as a local file (structured according to the [GREGOR data model](https://gregorconsortium.org/data-model))
 
 ### Use Cases
@@ -133,8 +134,35 @@ Create a cohort allele frequency object for a given variant, subsettable by part
  - `participant_list` (List of Strings, optional): Subset of participants to use. Defaults to None.
  - `phenotype` (String, optional): Specific phenotype to subset on. Defaults to None.
 
-### Caveats
-- For multiple alleles, the cohort allele frequency returned is based only on the position and not on the state. In other words, all alleles on a given variant are handled together.
+### Example Usage on Terra
+```python
+# imports
+from vrs_anvil.evidence import create_patient_phenotype_index, get_cohort_allele_frequency
+
+# get variant of interest
+allele_translator = AlleleTranslator(seqrepo_dataproxy)
+variant_ids = ["chr3-10172-AC-A"]
+allele = allele_translator.translate_from(variant_id)
+vrs_id = allele.id
+
+# specify data paths
+vcf_path = "/path/to/vcf"
+vcf_index_path = "path/to/vcf/index"
+
+# creating an index
+pheno_index_path = "/home/jupyter/pheno.json"
+create_patient_phenotype_index(as_set=True, save_path=pheno_index_path)
+
+# generating cohort allele frequency
+from vrs_anvil.evidence import create_patient_phenotype_index, get_cohort_allele_frequency
+get_cohort_allele_frequency(
+   variant_id = vrs_id,
+   vcf_path = vcf_path,
+   vcf_index_path = vcf_index_path,
+   phenotype_index_path=pheno_index_path
+)
+```
+### Work in Progress
 - For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
 
 
@@ -151,7 +179,7 @@ python3 -m ga4gh.vrs.extras.vcf_annotation --vcf_in tests/fixtures/1kGP.chr1.100
 
 The above is an example using an example vcf. Replace the `--vcf_out` and `vrs_pickle_out` here with your desired output file path, where the output vcf can be BCF (`vcf.gz`) or VCF (`vcf`)
 
-Also, see the [VRS Annotator workflow](https://dockstore.org/workflows/github.com/ohsu-comp-bio/vrs-annotator/VRSAnnotator:main?tab=info) on Dockstore for a way to do this on Terra.
+Also, see the [VRS Annotator](https://dockstore.org/workflows/github.com/ohsu-comp-bio/vrs-annotator/VRSAnnotator:main?tab=info) workflow on Dockstore for a way to do this on Terra.
 
 ### Contributing
 
