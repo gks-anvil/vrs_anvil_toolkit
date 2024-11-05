@@ -26,6 +26,24 @@ def vrs_id_solo_alt(remote_chry_vcf_path):
             return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
 
 
+@pytest.fixture
+def vrs_vcf_index() -> str:
+    tests_dir = Path(os.path.dirname(__file__)).parent.parent
+    index_path = os.path.join(
+        tests_dir.absolute(), "fixtures/gregor/chr3_chrY_index.db"
+    )
+
+    print("vrs_vcf_index path:", index_path)
+    if os.path.exists(index_path):
+        return str(index_path)
+
+    assert (
+        "PHENOTYPE_TABLE" in os.environ
+    ), "No VRS VCF index found, see tests/fixtures/gregor/README.md for setup"
+
+    return os.environ["VRS_VCF_INDEX"]
+
+
 @pytest.fixture()
 def phenotype_table() -> str:
     tests_dir = Path(os.path.dirname(__file__)).parent.parent
@@ -39,6 +57,6 @@ def phenotype_table() -> str:
 
     assert (
         "PHENOTYPE_TABLE" in os.environ
-    ), "No phenotype table found, make sure to download it from an AnVIL GREGoR data table, then either move the file to tests/fixtures/gregor/phenotypes.tsv or export the absolute path to the PHENOTYPE_TABLE bash variable"
+    ), "No phenotype table found, see tests/fixtures/gregor/README.md for setup"
 
     return os.environ["PHENOTYPE_TABLE"]

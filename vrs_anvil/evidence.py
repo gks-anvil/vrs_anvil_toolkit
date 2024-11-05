@@ -13,7 +13,7 @@ from pysam import VariantFile, VariantRecord
 def get_vcf_row(
     variant_id: str, vcf: VariantFile, index_path: str = None
 ) -> VariantRecord:
-    """given a variant id and annotated VCF, get the row ID associated with it
+    """given a variant id and annotated VCF, get the associated VCF row
 
     Args:
         variant_id (str): VRS ID for the variant of interest

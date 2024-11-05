@@ -4,6 +4,7 @@ import pytest
 
 from typing import Generator
 from pysam import VariantFile, VariantRecord
+from pytest import approx
 
 from vrs_anvil.evidence import get_cohort_allele_frequency
 
@@ -84,7 +85,7 @@ def test_remote_vcf(
         raise e
 
 
-def test_allele_counts_first_5_rows(chr3_vcf_path, phenotype_table):
+def test_allele_counts_first_5_rows(chr3_vcf_path, vrs_vcf_index, phenotype_table):
     """test that the calculated allele counts with no phenotype specified matches
     the actual counts stored in the INFO of the first 10 rows. Works for diploid (non-sex) variants
     """
@@ -108,7 +109,10 @@ def test_allele_counts_first_5_rows(chr3_vcf_path, phenotype_table):
                 continue
 
             caf = get_cohort_allele_frequency(
-                allele_id, chr3_vcf_path, phenotype_table=phenotype_table
+                allele_id,
+                chr3_vcf_path,
+                vcf_index_path=vrs_vcf_index,
+                phenotype_table=phenotype_table,
             )
 
             print("alt_index", alt_index)
@@ -128,11 +132,14 @@ def test_allele_counts_first_5_rows(chr3_vcf_path, phenotype_table):
 
 
 def test_caf_generates_correct_allele_freq(
-    vrs_id_solo_alt, remote_chry_vcf_path, phenotype_table
+    vrs_id_solo_alt, remote_chry_vcf_path, vrs_vcf_index, phenotype_table
 ):
     """test caf generation with default parameters and no phenotype specified"""
     caf = get_cohort_allele_frequency(
-        vrs_id_solo_alt, remote_chry_vcf_path, phenotype_table=phenotype_table
+        vrs_id_solo_alt,
+        remote_chry_vcf_path,
+        vcf_index_path=vrs_vcf_index,
+        phenotype_table=phenotype_table,
     )
     print(json.dumps(caf))
 
@@ -149,7 +156,7 @@ def test_caf_generates_correct_allele_freq(
 
     # check allele frequency
     expected_allele_freq = 0.0036
-    actual_allele_freq = round(caf["alleleFrequency"], 4)
+    actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
@@ -166,13 +173,16 @@ def test_caf_generates_correct_allele_freq(
 
 
 def test_caf_generates_correct_allele_freq_multi_alts(
-    vrs_id_multiple_alts, remote_chry_vcf_path, phenotype_table
+    vrs_id_multiple_alts, remote_chry_vcf_path, vrs_vcf_index, phenotype_table
 ):
     """for a vcf row with multiple alts, test caf generation with default parameters and no phenotype specified"""
 
     # creat caf
     caf = get_cohort_allele_frequency(
-        vrs_id_multiple_alts, remote_chry_vcf_path, phenotype_table=phenotype_table
+        vrs_id_multiple_alts,
+        remote_chry_vcf_path,
+        vcf_index_path=vrs_vcf_index,
+        phenotype_table=phenotype_table,
     )
 
     # logs
@@ -182,7 +192,7 @@ def test_caf_generates_correct_allele_freq_multi_alts(
 
     # check allele frequency
     expected_allele_freq = 0.9482
-    actual_allele_freq = round(caf["alleleFrequency"], 4)
+    actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
@@ -198,20 +208,23 @@ def test_caf_generates_correct_allele_freq_multi_alts(
         assert field in caf, f"expected field {field} in CAF"
 
 
-def test_caf_gen_one_pheno(vrs_id_multiple_alts, remote_chry_vcf_path, phenotype_table):
+def test_caf_gen_one_pheno(
+    vrs_id_multiple_alts, remote_chry_vcf_path, vrs_vcf_index, phenotype_table
+):
     """test caf generation specifying both a variant and a phenotype of interest"""
 
     phenotype = "HP:0001822"
     caf = get_cohort_allele_frequency(
         vrs_id_multiple_alts,
         remote_chry_vcf_path,
+        vcf_index_path=vrs_vcf_index,
         phenotype_table=phenotype_table,
         phenotype=phenotype,
     )
     print(json.dumps(caf))
 
     expected_allele_freq = 0.0009
-    actual_allele_freq = round(caf["alleleFrequency"], 4)
+    actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"

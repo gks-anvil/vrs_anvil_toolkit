@@ -22,7 +22,7 @@ In addition, this project facilitates the retrieval of evidence associated with 
 3. **Output Generation:**
    - Generates summary metrics about throughput, errors, evidence, and hits.
    - Presents the retrieved evidence in a structured format, providing access to information about studies, publications, and other relevant details.
-   - Crate cohort allele frequency objects
+   - Cerate cohort allele frequency objects
 
 4. **Additional Features**
    - Provides configurable options like threading and caching for processing VCFs.
@@ -108,7 +108,9 @@ Create a cohort allele frequency object for a given variant, subsettable by part
 
 ### General Prerequisites
 - Variant ID of interest
-- VCF Path to file
+- VCF path to file
+  - chr field is prepended with chr (eg `chr1`)
+  - genotyping laid out per-patient (eg a row has column `PATIENT_1` with value `0/1`)
 - Access to phenotypes table either through Terra (default) or as a local file (structured according to the [GREGOR data model](https://gregorconsortium.org/data-model))
 
 ### Use Cases
@@ -132,7 +134,7 @@ Create a cohort allele frequency object for a given variant, subsettable by part
  - `phenotype` (String, optional): Specific phenotype to subset on. Defaults to None.
 
 ### Caveats
-- For multiple alleles, the cohort allele frequency returned is based only on the position and not on the state. In other words, all alleles are on a given variant are handled together.
+- For multiple alleles, the cohort allele frequency returned is based only on the position and not on the state. In other words, all alleles on a given variant are handled together.
 - For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
 
 
