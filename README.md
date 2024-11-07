@@ -22,7 +22,7 @@ In addition, this project facilitates the retrieval of evidence associated with 
 3. **Output Generation:**
    - Generates summary metrics about throughput, errors, evidence, and hits.
    - Presents the retrieved evidence in a structured format, providing access to information about studies, publications, and other relevant details.
-   - Cerate cohort allele frequency objects
+   - Create cohort allele frequency objects
 
 4. **Additional Features**
    - Provides configurable options like threading and caching for processing VCFs.
