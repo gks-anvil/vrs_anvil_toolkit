@@ -22,6 +22,7 @@ In addition, this project facilitates the retrieval of evidence associated with 
 3. **Output Generation:**
    - Generates summary metrics about throughput, errors, evidence, and hits.
    - Presents the retrieved evidence in a structured format, providing access to information about studies, publications, and other relevant details.
+   - Create cohort allele frequency objects
 
 4. **Additional Features**
    - Provides configurable options like threading and caching for processing VCFs.
@@ -100,6 +101,71 @@ vrs_bulk ps
 
 The command line utility supports Google Cloud URIs and running commands in the background to interop with Terra out-of-the-box. This is described in the CLI usage above. For an example notebook, see `vrs-anvil-demo.ipynb` on the `vrs-anvil` workspace.
 
+## Cohort Allele Frequency Generation
+
+### Description
+Given a variant of interest, Create a cohort allele frequency object, subsettable by participant list and a phenotype code.
+
+### General Prerequisites
+- Variant ID of interest
+- VCF path to file
+  - chr field is prepended with chr (eg `chr1`)
+  - genotyping laid out per-patient (eg a row has column `PATIENT_1` with value `0/1`)
+- Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))
+- Access to phenotypes table either through Terra (default) or as a local file (structured according to the [GREGOR data model](https://gregorconsortium.org/data-model))
+
+### Use Cases
+1. Given a variant ID and VCF path, get the allele frequency for the entire cohort
+   - Get VCF row corresponding to variant ID using a variant -> VCF row index
+   - Get phenotypes corresponding to each participants using the phenotypes by patient table
+   - Aggregate counts for participants using their genotypes
+   - Create CAF object using counts
+
+2. Given a variant ID, VCF path, **and participant list**, get the allele frequency for a subset of participants (subcohort)
+   - Same as 1, just subsetted on a participant list
+
+3. Given a variant ID, VCF path, **and phenotype**, get the allele frequency for the cohort conditional on the phenotype
+   - Same as 1, but only increase the counts for the variant of interest if a given patient has the specified phenotype
+
+### Arguments
+ - `variant_id` (String): variant ID of interest (VRS ID)
+ - `vcf_path` (String): path to VCF file
+ - `phenotype_table` (String, optional): where to pull phenotype information from. Defaults to None.
+ - `participant_list` (List of Strings, optional): Subset of participants to use. Defaults to None.
+ - `phenotype` (String, optional): Specific phenotype to subset on. Defaults to None.
+
+### Example Usage on Terra
+```python
+# imports
+from vrs_anvil.evidence import create_patient_phenotype_index, get_cohort_allele_frequency
+
+# get variant of interest
+allele_translator = AlleleTranslator(seqrepo_dataproxy)
+variant_ids = ["chr3-10172-AC-A"]
+allele = allele_translator.translate_from(variant_id)
+vrs_id = allele.id
+
+# specify data paths
+vcf_path = "/path/to/vcf"
+vcf_index_path = "path/to/vcf/index"
+
+# creating an index
+pheno_index_path = "/home/jupyter/pheno.json"
+create_patient_phenotype_index(as_set=True, save_path=pheno_index_path)
+
+# generating cohort allele frequency
+from vrs_anvil.evidence import create_patient_phenotype_index, get_cohort_allele_frequency
+get_cohort_allele_frequency(
+   variant_id = vrs_id,
+   vcf_path = vcf_path,
+   vcf_index_path = vcf_index_path,
+   phenotype_index_path=pheno_index_path
+)
+```
+### Work in Progress
+- For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
+
+
 **Processing VCF Files ([vrs-python](https://github.com/ga4gh/vrs-python))**
 
 vrs-python is a GA4GH GKS package centered around creating Variant Representation specification (VRS) IDs: consistent, globally unique identifiers for variation. Some of its functionality includes variant ID translation and VCF annotation. Used as a dependency in `vrs_bulk`, it can also be used as a standalone package.
@@ -113,7 +179,7 @@ python3 -m ga4gh.vrs.extras.vcf_annotation --vcf_in tests/fixtures/1kGP.chr1.100
 
 The above is an example using an example vcf. Replace the `--vcf_out` and `vrs_pickle_out` here with your desired output file path, where the output vcf can be BCF (`vcf.gz`) or VCF (`vcf`)
 
-Also, see the [VRS Annotator workflow](https://dockstore.org/workflows/github.com/ohsu-comp-bio/vrs-annotator/VRSAnnotator:main?tab=info) on Dockstore for a way to do this on Terra.
+Also, see the [VRS Annotator](https://dockstore.org/workflows/github.com/ohsu-comp-bio/vrs-annotator/VRSAnnotator:main?tab=info) workflow on Dockstore for a way to do this on Terra.
 
 ### Contributing
 
