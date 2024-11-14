@@ -7,6 +7,8 @@ import pandas as pd
 
 from datetime import datetime
 from firecloud import api as fapi
+from ga4gh.core.entity_models import DataSet
+from ga4gh.va_spec.profiles import CohortAlleleFrequencyStudyResult
 from pysam import VariantFile, VariantRecord
 
 
@@ -196,7 +198,7 @@ def get_cohort_allele_frequency(
     phenotype_index_path: str = None,
     participant_list: list[str] = None,
     phenotype: str = None,
-) -> dict:
+) -> CohortAlleleFrequencyStudyResult:
     """Create a cohort allele frequency for either genotypes or phenotypes
 
     Args:
@@ -208,7 +210,7 @@ def get_cohort_allele_frequency(
         phenotype (str, optional): Specific phenotype to subset on. Defaults to None.
 
     Returns:
-        dict: Cohort Allele Frequency object
+        CohortAlleleFrequencyStudyResult: CAF object for cohort
     """
 
     assert (
@@ -314,31 +316,26 @@ def get_cohort_allele_frequency(
     if phenotype:
         label += f" conditioned on {phenotype}"
 
-    caf_dict = {
-        "type": "CohortAlleleFrequency",
-        "label": f"Overall Cohort Allele Frequency for {variant_id}",
-        "derivedFrom": {
-            "id": vcf_path,
-            "type": "DataSet",
-            "label": label,
-            "version": f"Created {datetime.now()}",
-        },
-        "focusAllele": variant_id,
-        "focusAlleleCount": focus_allele_count,
-        "locusAlleleCount": locus_allele_count,
-        "alleleFrequency": allele_frequency,
-        "cohort": {
-            "id": vcf_path,
-        },
-        "ancillaryResults": {
+    caf = CohortAlleleFrequencyStudyResult(
+        label=f"Overall Cohort Allele Frequency for {variant_id}",
+        sourceDataSet=[DataSet(
+            id=vcf_path,
+            label=label,
+            version=f"Created {datetime.now()}"
+        )],
+        focusAllele=variant_id,
+        focusAlleleCount=focus_allele_count,
+        locusAlleleCount=locus_allele_count,
+        focusAlleleFrequency=allele_frequency,
+        cohort={"id": vcf_path},  # TODO update with StudyGroup model
+        ancillaryResults={
             "homozygotes": num_homozygotes,
             "hemizygotes": num_hemizygotes,
             "phenotypes": list(cohort_phenotypes),
-        },
-    }
+        }
+    )
 
-    return caf_dict
-
+    return caf
 
 def fetch_by_vrs_ids(
     vrs_ids: list[str], db_location: Path | None = None
