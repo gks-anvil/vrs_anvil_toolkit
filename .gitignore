@@ -164,3 +164,9 @@ settings.json
 
 # workspace
 tmp/
+
+# GREGoR integration test fixtures
+# these could contain protected data and shouldn't be checked into source control
+tests/fixtures/gregor/phenotypes.tsv
+tests/fixtures/gregor/phenotypes.csv
+tests/fixtures/gregor/chr3_chrY_index.db
