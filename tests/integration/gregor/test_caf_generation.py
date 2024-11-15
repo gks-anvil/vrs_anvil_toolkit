@@ -192,7 +192,7 @@ def test_caf_generates_correct_allele_freq_multi_alts(
 
     # check allele frequency
     expected_allele_freq = 0.9482
-    actual_allele_freq = approx(caf.focusAlleleFrequency, abs=1e-4)
+    actual_allele_freq = approx(caf.alleleFrequency, abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
@@ -224,7 +224,7 @@ def test_caf_gen_one_pheno(
     print(json.dumps(caf))
 
     expected_allele_freq = 0.0009
-    actual_allele_freq = approx(caf.focusAlleleFrequency, abs=1e-4)
+    actual_allele_freq = approx(caf.alleleFrequency, abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"

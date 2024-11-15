@@ -3,12 +3,14 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+from typing import Literal
 import pandas as pd
 
 from datetime import datetime
 from firecloud import api as fapi
-from ga4gh.core.entity_models import DataSet
-from ga4gh.va_spec.profiles import CohortAlleleFrequencyStudyResult
+from ga4gh.core.entity_models import DataSet, StudyGroup
+from ga4gh.vrs.models import Allele
+from pydantic import BaseModel
 from pysam import VariantFile, VariantRecord
 
 
@@ -190,6 +192,28 @@ def create_patient_phenotype_index(
     return phenotype_index
 
 
+class CohortAlleleFrequency(BaseModel):
+    """Temporary class for describing cohort allele frequency observations from a
+    VCF or set of VCFs.
+
+    This model reflects a previous version of the Variant Annotation Specification. That
+    specification is still in flux, but this model should be replaced with the
+    corresponding ``ga4gh.va_spec`` model once its 1.0 release is completed.
+
+    In particular, the ``ancillaryResults`` object is in DRAFT status and could change
+    over time.
+    """
+    type: Literal["CohortAlleleFrequency"] = "CohortAlleleFrequency"
+    label: str
+    derivedFrom: DataSet
+    focusAllele: str | Allele
+    focusAlleleCount: int
+    locusAlleleCount: int
+    alleleFrequency: float
+    cohort: StudyGroup
+    ancillaryResults: dict
+
+
 def get_cohort_allele_frequency(
     variant_id: str,
     vcf_path: str,
@@ -198,7 +222,7 @@ def get_cohort_allele_frequency(
     phenotype_index_path: str = None,
     participant_list: list[str] = None,
     phenotype: str = None,
-) -> CohortAlleleFrequencyStudyResult:
+) -> CohortAlleleFrequency:
     """Create a cohort allele frequency for either genotypes or phenotypes
 
     Args:
@@ -210,7 +234,7 @@ def get_cohort_allele_frequency(
         phenotype (str, optional): Specific phenotype to subset on. Defaults to None.
 
     Returns:
-        CohortAlleleFrequencyStudyResult: CAF object for cohort
+        CohortAlleleFrequency: CAF object corresopnding to the given inputs.
     """
 
     assert (
@@ -316,26 +340,27 @@ def get_cohort_allele_frequency(
     if phenotype:
         label += f" conditioned on {phenotype}"
 
-    caf = CohortAlleleFrequencyStudyResult(
+    caf = CohortAlleleFrequency(
         label=f"Overall Cohort Allele Frequency for {variant_id}",
-        sourceDataSet=[DataSet(
+        derivedFrom=DataSet(
             id=vcf_path,
             label=label,
-            version=f"Created {datetime.now()}"
-        )],
+            version=f"Created {datetime.now()}",
+        ),
         focusAllele=variant_id,
         focusAlleleCount=focus_allele_count,
         locusAlleleCount=locus_allele_count,
-        focusAlleleFrequency=allele_frequency,
-        cohort={"id": vcf_path},  # TODO update with StudyGroup model
+        alleleFrequency=allele_frequency,
+        cohort=StudyGroup(id=vcf_path),
         ancillaryResults={
             "homozygotes": num_homozygotes,
             "hemizygotes": num_hemizygotes,
             "phenotypes": list(cohort_phenotypes),
-        }
+        },
     )
 
     return caf
+
 
 def fetch_by_vrs_ids(
     vrs_ids: list[str], db_location: Path | None = None
