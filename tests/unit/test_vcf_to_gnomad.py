@@ -19,4 +19,4 @@ def test_generate_gnomad_ids(caching_translator):
                     errors.append((gnomad_id, e))
     print(errors)
     assert len(results) >= 12, f"Errors: {len(errors)} Successes: {len(results)}"
-    # TODO confirm these are expected errors ? see https://github.com/ohsu-comp-bio/vrs-python-testing/issues/16
+    # TODO confirm these are expected errors ? see https://github.com/gks-anvil/vrs-python-testing/issues/16
