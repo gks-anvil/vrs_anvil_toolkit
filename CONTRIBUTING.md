@@ -9,7 +9,7 @@ Thank you for considering contributing to our Python project! By contributing, y
 2. **Clone the Repository:** Clone the forked repository to your local machine using the following command:
 
 ```bash
-git clone https://github.com/gks-anvil/vrs-python-testing
+git clone https://github.com/gks-anvil/vrs_anvil_toolkit
 python3 -m venv venv; source venv/bin/activate
 bash scripts/setup.sh
 pip install -r requirements-dev.txt
