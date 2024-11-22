@@ -1,4 +1,4 @@
-<img width="685" alt="image" src="https://github.com/ohsu-comp-bio/vrs-python-testing/assets/47808/909db052-972c-4508-a2f4-8a389de03320">
+<img width="685" alt="image" src="https://github.com/gks-anvil/vrs_anvil_toolkit/assets/47808/909db052-972c-4508-a2f4-8a389de03320">
 
 
 # VRS AnVIL Toolkit
@@ -40,7 +40,7 @@ In addition, this project facilitates the retrieval of evidence associated with 
 1. Get the repository either by...
    1. Source code
    ```bash
-   git clone https://github.com/ohsu-comp-bio/vrs_anvil_toolkit
+   git clone https://github.com/gks-anvil/vrs_anvil_toolkit
    cd vrs_anvil_toolkit
    ```
    2. PyPi
@@ -179,7 +179,7 @@ python3 -m ga4gh.vrs.extras.vcf_annotation --vcf_in tests/fixtures/1kGP.chr1.100
 
 The above is an example using an example vcf. Replace the `--vcf_out` and `vrs_pickle_out` here with your desired output file path, where the output vcf can be BCF (`vcf.gz`) or VCF (`vcf`)
 
-Also, see the [VRS Annotator](https://dockstore.org/workflows/github.com/ohsu-comp-bio/vrs-annotator/VRSAnnotator:main?tab=info) workflow on Dockstore for a way to do this on Terra.
+Also, see the [VRS Annotator](https://dockstore.org/workflows/github.com/gks-anvil/vrs-annotator/VRSAnnotator:main?tab=info) workflow on Dockstore for a way to do this on Terra.
 
 ### Contributing
 
