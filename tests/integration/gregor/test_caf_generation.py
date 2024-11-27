@@ -116,16 +116,16 @@ def test_allele_counts_first_5_rows(chr3_vcf_path, vrs_vcf_index, phenotype_tabl
             )
 
             print("alt_index", alt_index)
-            print("AC:", record.info["AC"][alt_index], caf["focusAlleleCount"])
-            print("AN:", record.info["AN"], caf["locusAlleleCount"])
+            print("AC:", record.info["AC"][alt_index], caf.focusAlleleCount)
+            print("AN:", record.info["AN"], caf.locusAlleleCount)
             ac = record.info["AC"][alt_index]
             an = record.info["AN"]
 
             assert (
-                caf["focusAlleleCount"] == ac
+                caf.focusAlleleCount == ac
             ), f"row {i} alt {alt_index} has different focus allele counts, expected {ac}, got {caf['focusAlleleCount']}"
             assert (
-                caf["locusAlleleCount"] == an
+                caf.locusAlleleCount == an
             ), f"row {i} alt {alt_index} has different locus allele counts, expected {an}, got {caf['locusAlleleCount']}"
         if i == 5:
             break
@@ -145,18 +145,18 @@ def test_caf_generates_correct_allele_freq(
 
     # sanity checks
     assert (
-        caf["type"] == "CohortAlleleFrequency"
+        caf.type == "CohortAlleleFrequencyStudyResult"
     ), f"object of type CohortAlleleFrequency not returned, returned {caf['type']} instead"
     assert (
-        caf["focusAlleleCount"] <= caf["locusAlleleCount"]
-    ), f"Focus allele count ({caf['focusAlleleCount']}) is larger than locus allele count ({caf['locusAlleleCount']})"
+        caf.focusAlleleCount <= caf.locusAlleleCount
+    ), f"Focus allele count ({caf.focusAlleleCount}) is larger than locus allele count ({caf['locusAlleleCount']})"
 
-    print("focusAlleleCount:", caf["focusAlleleCount"])
-    print("locusAlleleCount:", caf["locusAlleleCount"])
+    print("focusAlleleCount:", caf.focusAlleleCount)
+    print("locusAlleleCount:", caf.locusAlleleCount)
 
     # check allele frequency
     expected_allele_freq = 0.0036
-    actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
+    actual_allele_freq = approx(caf.focusAlleleFrequency, abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
@@ -186,13 +186,13 @@ def test_caf_generates_correct_allele_freq_multi_alts(
     )
 
     # logs
-    print(f"CAF generated for {caf['focusAllele']}")
-    print("focusAlleleCount:", caf["focusAlleleCount"])
-    print("locusAlleleCount:", caf["locusAlleleCount"])
+    print(f"CAF generated for {caf.focusAllele}")
+    print("focusAlleleCount:", caf.focusAlleleCount)
+    print("locusAlleleCount:", caf.locusAlleleCount)
 
     # check allele frequency
     expected_allele_freq = 0.9482
-    actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
+    actual_allele_freq = approx(caf.alleleFrequency, abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
@@ -224,7 +224,7 @@ def test_caf_gen_one_pheno(
     print(json.dumps(caf))
 
     expected_allele_freq = 0.0009
-    actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
+    actual_allele_freq = approx(caf.alleleFrequency, abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
     ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
