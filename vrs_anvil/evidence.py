@@ -8,6 +8,10 @@ import pandas as pd
 from datetime import datetime
 from firecloud import api as fapi
 from pysam import VariantFile, VariantRecord
+from plugin_system.plugin_manager import PluginManager
+
+# location to register plugins classes
+PLUGIN_DIR = "plugin_system.plugins"
 
 
 def get_vcf_row(
@@ -46,6 +50,7 @@ def get_vcf_row(
         # find variant of interest
         for _, chr, pos in fetch_by_vrs_ids([variant_id], index_path):
             for record in vcf.fetch(f"chr{chr}", pos - 1, pos):
+                # for record in vcf.fetch(chr, pos - 1, pos):
                 if variant_id in record.info["VRS_Allele_IDs"]:
                     return record
     else:
@@ -196,6 +201,7 @@ def get_cohort_allele_frequency(
     phenotype_index_path: str = None,
     participant_list: list[str] = None,
     phenotype: str = None,
+    plugin_name: str = "GregorPlugin",
 ) -> dict:
     """Create a cohort allele frequency for either genotypes or phenotypes
 
@@ -215,6 +221,10 @@ def get_cohort_allele_frequency(
         "ga4gh:VA" in variant_id
     ), "variant ID type not yet supported, use VRS ID instead"
 
+    # load plugin of choice
+    plugin_manager = PluginManager(PLUGIN_DIR)
+    plugin = plugin_manager.load_plugin(plugin_name)
+
     # get index of variant to patient
     # in this case, the VCF row of the variant_id
     vcf = VariantFile(vcf_path)
@@ -227,20 +237,18 @@ def get_cohort_allele_frequency(
         alt_index -= 1
 
     # get index of participant to phenotypes
-    phenotype_index = get_patient_phenotype_index(
-        phenotype_table=phenotype_table, cached_dict=phenotype_index_path, as_set=True
+    # FIXME: figure out how to do this so it calls get phenotype index instead
+    # phenotype_index = get_patient_phenotype_index(
+    #     phenotype_table=phenotype_table, cached_dict=phenotype_index_path, as_set=True
+    # )
+    phenotype_index = plugin.create_sample_phenotype_index(
+        phenotype_table=phenotype_table, as_set=True
     )
 
     # create cohort, defaults to all patients in VCF
     cohort = (
         set(participant_list) if participant_list is not None else set(record.samples)
     )
-
-    # FIXME: support for hemizygous regions (chrX / mitochondrial variants)
-    # GREGOR makes use of DRAGEN's continuous allele frequency approach:
-    # https://support-docs.illumina.com/SW/DRAGEN_v40/Content/SW/DRAGEN/MitochondrialCalling.htm
-    within_hemizygous_region = record.chrom in ["chrM", "chrY"]
-    within_x_chr = record.chrom == "chrX"
 
     # variables for final cohort allele frequency (CAF) object
     focus_allele_count = 0
@@ -252,60 +260,81 @@ def get_cohort_allele_frequency(
         num_homozygotes = 0
         num_hemizygotes = 0
 
+    # # FIXME: REMOVE #
+    # within_hemizygous_region = record.chrom in ["chrM", "chrY"]
+    # within_x_chr = record.chrom == "chrX"
+
     # aggregate data for CAF so long as...
-    for participant_id, genotype in record.samples.items():
+    for sample_id, genotype in record.samples.items():
         # 1. participant has recorded genotype
         alleles = genotype.allele_indices
         if all(a is None for a in alleles):
             continue
 
         # 2. participant in specified cohort
-        if participant_id not in cohort:
+        if sample_id not in cohort:
             continue
 
         # 3. participant did not specify phenotype (doing general query)
         # or participant has specified phenotype
         has_specified_phenotype = (
-            participant_id in phenotype_index
-            and phenotype in phenotype_index[participant_id]
+            sample_id in phenotype_index and phenotype in phenotype_index[sample_id]
         )
 
-        # with these conditions satisfied...
-        if phenotype is None or has_specified_phenotype:
-            # increment focus allele count, handling multiple alts edge case
-            num_alt_alleles = sum(
-                [1 for _, alt_number in enumerate(alleles) if alt_number == alt_index]
-            )
+        # # FIXME: REMOVE #
+        # # with these conditions satisfied...
+        # if phenotype is None or has_specified_phenotype:
+        #     # increment focus allele count, handling multiple alts edge case
+        #     num_alt_alleles = sum(
+        #         [1 for _, alt_number in enumerate(alleles) if alt_number == alt_index]
+        #     )
 
-            if not within_hemizygous_region:
-                focus_allele_count += num_alt_alleles
-            elif num_alt_alleles > 0:
-                focus_allele_count += 1
+        #     if not within_hemizygous_region:
+        #         focus_allele_count += num_alt_alleles
+        #     elif num_alt_alleles > 0:
+        #         focus_allele_count += 1
+
+        #     # record zygosity
+        #     if not within_hemizygous_region and len(alleles) == 2:
+        #         if num_alt_alleles == 1:
+        #             num_hemizygotes += 1
+        #         elif num_alt_alleles == 2:
+        #             num_homozygotes += 1
+
+        # # increment total allele count
+        # if within_hemizygous_region:
+        #     locus_allele_count += 1
+        # elif within_x_chr:
+        #     # FIXME: make use of sex of participant?
+        #     is_female = True
+        #     locus_allele_count += 2 if is_female else 1
+        # else:
+        #     locus_allele_count += len(alleles)
+
+        # TODO: uncomment
+        # with these conditions satisfied...
+        num_focus_alleles, num_locus_alleles = plugin.process_sample_genotype(
+            record, sample_id, phenotype_index, alt_index
+        )
+
+        if phenotype is None or has_specified_phenotype:
+            focus_allele_count += num_focus_alleles
 
             # record zygosity
-            if not within_hemizygous_region and len(alleles) == 2:
-                if num_alt_alleles == 1:
-                    num_hemizygotes += 1
-                elif num_alt_alleles == 2:
-                    num_homozygotes += 1
+            if num_focus_alleles == 1:
+                num_hemizygotes += 1
+            elif num_focus_alleles == 2:
+                num_homozygotes += 1
 
-        # increment total allele count
-        if within_hemizygous_region:
-            locus_allele_count += 1
-        elif within_x_chr:
-            # FIXME: make use of sex of participant?
-            is_female = True
-            locus_allele_count += 2 if is_female else 1
-        else:
-            locus_allele_count += len(alleles)
+        locus_allele_count += num_locus_alleles
 
         # update phenotypes as necessary
         if phenotype is not None:
             continue
         else:
             # aggregate phenotypes if they exist
-            if participant_id in phenotype_index:
-                cohort_phenotypes.update(phenotype_index[participant_id])
+            if sample_id in phenotype_index:
+                cohort_phenotypes.update(phenotype_index[sample_id])
 
     # populate final caf dict
     allele_frequency = focus_allele_count * 1.0 / locus_allele_count

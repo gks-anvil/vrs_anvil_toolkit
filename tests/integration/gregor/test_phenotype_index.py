@@ -1,6 +1,7 @@
 import os
 from pysam import VariantFile
 
+from plugin_system.plugins.gregor_plugin import GregorPlugin
 from vrs_anvil.evidence import (
     create_patient_phenotype_index,
     get_patient_phenotype_index,
@@ -29,7 +30,7 @@ def test_get_phenotypes_from_vcf_row(remote_chry_vcf_path, phenotype_table):
 
         print("VRS IDs:", vrs_ids)
 
-        phenotype_index = get_patient_phenotype_index(phenotype_table)
+        phenotype_index = GregorPlugin().create_sample_phenotype_index(phenotype_table)
 
         print("patients:", patients)
         for patient_id in patients:
@@ -62,6 +63,7 @@ def test_save_and_use_phenotype_index_from_path(tmp_path, phenotype_table):
     ), "phenotypes in index are not returned as a list by default"
 
     # read in from index
+    # TODO: not accessible to programatically use cache, revise source code
     assert os.path.exists(
         save_path
     ), f"phenotype index file not being written to disk to save path {save_path}"
