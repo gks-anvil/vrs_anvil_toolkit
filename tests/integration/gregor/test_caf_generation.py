@@ -14,9 +14,9 @@ from vrs_anvil.evidence import get_cohort_allele_frequency
 
 
 @pytest.fixture
-def chromosome():
+def chr3():
     """Return chromosome in the VCF."""
-    return "chrY"
+    return "chr3"
 
 
 @pytest.fixture
@@ -38,12 +38,14 @@ def expected_record_count():
 
 
 @pytest.fixture()
-def vrs_id_multiple_alts(remote_chry_vcf_path):
+def vrs_id_chrY(chrY_vcf_path):
     """VRS ID extracted from VCF row with multiple alts"""
 
-    for i, record in enumerate(VariantFile(remote_chry_vcf_path)):
+    for i, record in enumerate(VariantFile(chrY_vcf_path)):
         if i == 4:
-            return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
+            return record.info["VRS_Allele_IDs"][
+                2
+            ]  # index 2 refers to 2nd alt since 0 is a ref
 
 
 def participants(record: VariantRecord) -> Generator[str, None, None]:
@@ -59,9 +61,7 @@ def participants(record: VariantRecord) -> Generator[str, None, None]:
             yield participant
 
 
-def test_remote_vcf(
-    remote_chry_vcf_path, chromosome, start, stop, expected_record_count
-):
+def test_remote_vcf(chrY_vcf_path, start, stop, expected_record_count):
     """Read a remote vcf file, query a range of alleles, check that at least 1 participant exists for each allele."""
     assert "GCS_OAUTH_TOKEN" in os.environ, (
         "GCS_OAUTH_TOKEN required: "
@@ -69,9 +69,9 @@ def test_remote_vcf(
         "see https://github.com/pysam-developers/pysam/issues/592#issuecomment-353693674 https://support.terra.bio/hc/en-us/articles/360042647612-May-4-2020"
     )
     try:
-        vcf = VariantFile(remote_chry_vcf_path)  # auto-detect input format
+        vcf = VariantFile(chrY_vcf_path)  # auto-detect input format
         # fetch returns pysam.libcbcf.VariantRecord
-        records = [_ for _ in vcf.fetch(chromosome, start, stop)]
+        records = [_ for _ in vcf.fetch("chrY", start, stop)]
         assert len(records) == expected_record_count
 
         for variant_record in records:
@@ -131,13 +131,13 @@ def test_allele_counts_first_5_rows(chr3_vcf_path, vrs_vcf_index, phenotype_tabl
             break
 
 
-def test_caf_generates_correct_allele_freq(
-    vrs_id_solo_alt, remote_chry_vcf_path, vrs_vcf_index, phenotype_table
+def test_correct_caf_given_chr3_variant(
+    vrs_id_chr3, chr3_vcf_path, vrs_vcf_index, phenotype_table
 ):
     """test caf generation with default parameters and no phenotype specified"""
     caf = get_cohort_allele_frequency(
-        vrs_id_solo_alt,
-        remote_chry_vcf_path,
+        vrs_id_chr3,
+        chr3_vcf_path,
         vcf_index_path=vrs_vcf_index,
         phenotype_table=phenotype_table,
     )
@@ -155,7 +155,7 @@ def test_caf_generates_correct_allele_freq(
     print("locusAlleleCount:", caf["locusAlleleCount"])
 
     # check allele frequency
-    expected_allele_freq = 0.0036
+    expected_allele_freq = 183.0 / 896
     actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
@@ -172,15 +172,60 @@ def test_caf_generates_correct_allele_freq(
         assert field in caf, f"expected field {field} in CAF"
 
 
-def test_caf_generates_correct_allele_freq_multi_alts(
-    vrs_id_multiple_alts, remote_chry_vcf_path, vrs_vcf_index, phenotype_table
+def test_correct_caf_given_chr3_variant_and_pheno(
+    vrs_id_chr3, chr3_vcf_path, vrs_vcf_index, phenotype_table
+):
+    """test caf generation for diploid variant with a specified phenotype"""
+
+    phenotype = "HP:0001263"
+
+    caf = get_cohort_allele_frequency(
+        vrs_id_chr3,
+        chr3_vcf_path,
+        vcf_index_path=vrs_vcf_index,
+        phenotype_table=phenotype_table,
+        phenotype=phenotype,
+    )
+    print(json.dumps(caf))
+
+    # sanity checks
+    assert (
+        caf["type"] == "CohortAlleleFrequency"
+    ), f"object of type CohortAlleleFrequency not returned, returned {caf['type']} instead"
+    assert (
+        caf["focusAlleleCount"] <= caf["locusAlleleCount"]
+    ), f"Focus allele count ({caf['focusAlleleCount']}) is larger than locus allele count ({caf['locusAlleleCount']})"
+
+    print("focusAlleleCount:", caf["focusAlleleCount"])
+    print("locusAlleleCount:", caf["locusAlleleCount"])
+
+    # check allele frequency
+    expected_allele_freq = 2.0 / 26
+    actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
+    assert (
+        actual_allele_freq == expected_allele_freq
+    ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
+
+    # ensure important fields exist
+    expected_fields = [
+        "focusAlleleCount",
+        "locusAlleleCount",
+        "alleleFrequency",
+        "ancillaryResults",
+    ]
+    for field in expected_fields:
+        assert field in caf, f"expected field {field} in CAF"
+
+
+def test_correct_allele_freq_for_multi_alts_chrY_variant(
+    vrs_id_chrY, chrY_vcf_path, vrs_vcf_index, phenotype_table
 ):
     """for a vcf row with multiple alts, test caf generation with default parameters and no phenotype specified"""
 
     # creat caf
     caf = get_cohort_allele_frequency(
-        vrs_id_multiple_alts,
-        remote_chry_vcf_path,
+        vrs_id_chrY,
+        chrY_vcf_path,
         vcf_index_path=vrs_vcf_index,
         phenotype_table=phenotype_table,
     )
@@ -191,7 +236,7 @@ def test_caf_generates_correct_allele_freq_multi_alts(
     print("locusAlleleCount:", caf["locusAlleleCount"])
 
     # check allele frequency
-    expected_allele_freq = 0.9482
+    expected_allele_freq = 0.0491
     actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq
@@ -208,22 +253,22 @@ def test_caf_generates_correct_allele_freq_multi_alts(
         assert field in caf, f"expected field {field} in CAF"
 
 
-def test_caf_gen_one_pheno(
-    vrs_id_multiple_alts, remote_chry_vcf_path, vrs_vcf_index, phenotype_table
+def test_correct_allele_freq_for_multi_alts_chrY_variant_and_phenotype(
+    vrs_id_chrY, chrY_vcf_path, vrs_vcf_index, phenotype_table
 ):
     """test caf generation specifying both a variant and a phenotype of interest"""
 
-    phenotype = "HP:0001822"
+    phenotype = "HP:0001263"
     caf = get_cohort_allele_frequency(
-        vrs_id_multiple_alts,
-        remote_chry_vcf_path,
+        vrs_id_chrY,
+        chrY_vcf_path,
         vcf_index_path=vrs_vcf_index,
         phenotype_table=phenotype_table,
         phenotype=phenotype,
     )
     print(json.dumps(caf))
 
-    expected_allele_freq = 0.0009
+    expected_allele_freq = 0.1034
     actual_allele_freq = approx(caf["alleleFrequency"], abs=1e-4)
     assert (
         actual_allele_freq == expected_allele_freq

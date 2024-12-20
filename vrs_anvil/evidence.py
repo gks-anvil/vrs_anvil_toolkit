@@ -255,14 +255,9 @@ def get_cohort_allele_frequency(
     locus_allele_count = 0
     cohort_phenotypes = set() if phenotype is None else [phenotype]
 
-    # if haploid not diploid, these fields are not relevant
-    if len(record.samples[0]["GT"]) == 2:
-        num_homozygotes = 0
-        num_hemizygotes = 0
-
-    # # FIXME: REMOVE #
-    # within_hemizygous_region = record.chrom in ["chrM", "chrY"]
-    # within_x_chr = record.chrom == "chrX"
+    # if not a diploid variant, these fields are not relevant
+    num_homozygotes = 0
+    num_hemizygotes = 0
 
     # aggregate data for CAF so long as...
     for sample_id, genotype in record.samples.items():
@@ -281,37 +276,6 @@ def get_cohort_allele_frequency(
             sample_id in phenotype_index and phenotype in phenotype_index[sample_id]
         )
 
-        # # FIXME: REMOVE #
-        # # with these conditions satisfied...
-        # if phenotype is None or has_specified_phenotype:
-        #     # increment focus allele count, handling multiple alts edge case
-        #     num_alt_alleles = sum(
-        #         [1 for _, alt_number in enumerate(alleles) if alt_number == alt_index]
-        #     )
-
-        #     if not within_hemizygous_region:
-        #         focus_allele_count += num_alt_alleles
-        #     elif num_alt_alleles > 0:
-        #         focus_allele_count += 1
-
-        #     # record zygosity
-        #     if not within_hemizygous_region and len(alleles) == 2:
-        #         if num_alt_alleles == 1:
-        #             num_hemizygotes += 1
-        #         elif num_alt_alleles == 2:
-        #             num_homozygotes += 1
-
-        # # increment total allele count
-        # if within_hemizygous_region:
-        #     locus_allele_count += 1
-        # elif within_x_chr:
-        #     # FIXME: make use of sex of participant?
-        #     is_female = True
-        #     locus_allele_count += 2 if is_female else 1
-        # else:
-        #     locus_allele_count += len(alleles)
-
-        # TODO: uncomment
         # with these conditions satisfied...
         num_focus_alleles, num_locus_alleles = plugin.process_sample_genotype(
             record, sample_id, phenotype_index, alt_index
@@ -326,7 +290,7 @@ def get_cohort_allele_frequency(
             elif num_focus_alleles == 2:
                 num_homozygotes += 1
 
-        locus_allele_count += num_locus_alleles
+            locus_allele_count += num_locus_alleles
 
         # update phenotypes as necessary
         if phenotype is not None:
@@ -337,7 +301,7 @@ def get_cohort_allele_frequency(
                 cohort_phenotypes.update(phenotype_index[sample_id])
 
     # populate final caf dict
-    allele_frequency = focus_allele_count * 1.0 / locus_allele_count
+    allele_frequency = focus_allele_count * 1.0 / locus_allele_count if locus_allele_count != 0 else 0
 
     label = vcf_path
     if phenotype:

@@ -6,7 +6,7 @@ from pysam import VariantFile
 
 
 @pytest.fixture
-def remote_chry_vcf_path():
+def chrY_vcf_path():
     """Return a GS URI to a remote VCF. Currently using annotated chrY GREGoR VCF"""
 
     return "gs://fc-secure-0b96edf7-d9b1-4ee2-94c9-c458fa44ccb1/gregor_joint_callset/gregor_consortium_u06_sorted_chrY_GRU_VRS.vcf.gz"
@@ -18,12 +18,22 @@ def chr3_vcf_path():
 
 
 @pytest.fixture()
-def vrs_id_solo_alt(remote_chry_vcf_path):
+def vrs_id_chr3(
+    chr3_vcf_path,
+):
     """VRS ID extracted from VCF row with only one alt"""
 
-    for i, record in enumerate(VariantFile(remote_chry_vcf_path)):
-        if i == 10:
+    chrom = "chr3"
+    pos = 10456
+    for record in VariantFile(chr3_vcf_path).fetch(chrom, pos - 1, pos):
+        if record.ref == "CTT":
+            print("record:", record)
             return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
+
+    raise ("couldn't find record for vrs_id_solo_alt")
+    # for i, record in enumerate(VariantFile(remote_chry_vcf_path)):
+    #     if i == 10:
+    #         return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
 
 
 @pytest.fixture

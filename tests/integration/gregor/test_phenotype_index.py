@@ -8,14 +8,14 @@ from vrs_anvil.evidence import (
 )
 
 
-def test_get_phenotypes_from_vcf_row(remote_chry_vcf_path, phenotype_table):
+def test_get_phenotypes_from_vcf_row(chrY_vcf_path, phenotype_table):
     """creates phenotypes index and calculate list of unique phenotypes for the first five rows,
     checking total unique phenotypes the last row"""
 
-    vcf = VariantFile(remote_chry_vcf_path)
+    vcf = VariantFile(chrY_vcf_path)
     assert "VRS_Allele_IDs" in vcf.header.info, (
         "no VRS_Allele_IDs key in INFO found, "
-        "please ensure that this is an VRS annotated VCF"
+        "please ensure that this is an VRS sannotated VCF"
     )
 
     for i, record in enumerate(vcf.fetch()):
