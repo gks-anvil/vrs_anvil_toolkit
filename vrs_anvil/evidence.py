@@ -230,8 +230,8 @@ def get_cohort_allele_frequency(
     vcf = VariantFile(vcf_path)
     record = get_vcf_row(variant_id, vcf, vcf_index_path)
 
-    # if multiple alts, get index associated with alt
-    # if ref is specified in VRS Alleles IDs, adjust indices to match
+    # if multiple alts, get index associated with alt allele
+    # if ref has been saved in VRS Alleles IDs, adjust indices to match
     alt_index = record.info["VRS_Allele_IDs"].index(variant_id)
     if "REF" not in vcf.header.info["VRS_Allele_IDs"].description:
         alt_index -= 1
@@ -245,52 +245,56 @@ def get_cohort_allele_frequency(
         phenotype_table=phenotype_table, as_set=True
     )
 
-    # create cohort, defaults to all patients in VCF
+    # create cohort, defaults to all samples listed in VCF
     cohort = (
         set(participant_list) if participant_list is not None else set(record.samples)
     )
 
-    # variables for final cohort allele frequency (CAF) object
+    # variables for cohort allele frequency (CAF) object
     focus_allele_count = 0
     locus_allele_count = 0
     cohort_phenotypes = set() if phenotype is None else [phenotype]
 
-    # if not a diploid variant, these fields are not relevant
+    # only relevat if the variant is diploid
     num_homozygotes = 0
     num_hemizygotes = 0
 
     # aggregate data for CAF so long as...
     for sample_id, genotype in record.samples.items():
-        # 1. participant has recorded genotype
+        # 1. sample genotype call exist
         alleles = genotype.allele_indices
         if all(a is None for a in alleles):
             continue
 
-        # 2. participant in specified cohort
+        # 2. sample in specified cohort
         if sample_id not in cohort:
             continue
 
-        # 3. participant did not specify phenotype (doing general query)
-        # or participant has specified phenotype
+        # 3. has the phenotype if specified
         has_specified_phenotype = (
             sample_id in phenotype_index and phenotype in phenotype_index[sample_id]
         )
+        if phenotype is not None and not has_specified_phenotype:
+            continue
+
+        # 4. apply any other filters required
+        if not plugin.include_sample(sample_id, record, phenotype, phenotype_index):
+            continue
 
         # with these conditions satisfied...
         num_focus_alleles, num_locus_alleles = plugin.process_sample_genotype(
             record, sample_id, phenotype_index, alt_index
         )
 
-        if phenotype is None or has_specified_phenotype:
-            focus_allele_count += num_focus_alleles
+        # increment allele counts
+        focus_allele_count += num_focus_alleles
+        locus_allele_count += num_locus_alleles
 
-            # record zygosity
-            if num_focus_alleles == 1:
-                num_hemizygotes += 1
-            elif num_focus_alleles == 2:
-                num_homozygotes += 1
-
-            locus_allele_count += num_locus_alleles
+        # record zygosity
+        if num_focus_alleles == 1:
+            num_hemizygotes += 1
+        elif num_focus_alleles == 2:
+            num_homozygotes += 1
 
         # update phenotypes as necessary
         if phenotype is not None:
@@ -301,7 +305,9 @@ def get_cohort_allele_frequency(
                 cohort_phenotypes.update(phenotype_index[sample_id])
 
     # populate final caf dict
-    allele_frequency = focus_allele_count * 1.0 / locus_allele_count if locus_allele_count != 0 else 0
+    allele_frequency = (
+        focus_allele_count * 1.0 / locus_allele_count if locus_allele_count != 0 else 0
+    )
 
     label = vcf_path
     if phenotype:

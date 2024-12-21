@@ -90,15 +90,14 @@ class GregorPlugin(BasePlugin):
 
         return phenotype_index
 
-    def include_sample(self, sample_id: str) -> bool:
-        """given a sample id, determine whether to include it in the allele counts
+    def include_sample(self, sample_id: str, record: pysam.VariantRecord, phenotype: str, sample_phenotype_index: dict[str, list[str]]) -> bool:
+        """given a sample id and its genotype and phenotype of interest, determine whether to include it in the allele counts
 
         Returns:
             bool: whether to include the sample
         """
-        raise NotImplementedError(
-            "Plugins must implement include include_sample method"
-        )
+        # TODO: possibly implement filtering by sex of participant
+        return True
 
     def process_sample_genotype(
         self,
