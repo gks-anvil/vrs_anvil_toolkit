@@ -3,7 +3,7 @@ import pkgutil
 import importlib
 import os
 
-from plugin_system.base_plugin import BasePlugin
+from plugin_system.plugins.base_plugin import BasePlugin
 
 
 class PluginManager:
@@ -28,7 +28,7 @@ class PluginManager:
                     if attribute_name == plugin_name:
                         attribute = getattr(module, attribute_name)
                         if isinstance(attribute, type) and hasattr(
-                            attribute, "is_plugin"
+                            attribute, "__is_plugin__"
                         ):
                             self.plugin = attribute()
 

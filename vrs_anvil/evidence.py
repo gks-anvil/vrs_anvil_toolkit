@@ -283,7 +283,7 @@ def get_cohort_allele_frequency(
 
         # with these conditions satisfied...
         num_focus_alleles, num_locus_alleles = plugin.process_sample_genotype(
-            record, sample_id, phenotype_index, alt_index
+            sample_id, record, phenotype_index, alt_index
         )
 
         # increment allele counts

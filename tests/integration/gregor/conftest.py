@@ -27,7 +27,6 @@ def vrs_id_chr3(
     pos = 10456
     for record in VariantFile(chr3_vcf_path).fetch(chrom, pos - 1, pos):
         if record.ref == "CTT":
-            print("record:", record)
             return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
 
     raise ("couldn't find record for vrs_id_solo_alt")

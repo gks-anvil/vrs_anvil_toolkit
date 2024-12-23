@@ -108,31 +108,60 @@ Given a variant of interest, Create a cohort allele frequency object, subsettabl
 
 ### General Prerequisites
 - Variant ID of interest
-- VCF path to file
-  - chr field is prepended with chr (eg `chr1`)
-  - genotyping laid out per-patient (eg a row has column `PATIENT_1` with value `0/1`)
+- Valid joint VCF
+  - Assumes chr field is prepended with chr (eg `chr1`)
+  - genotyping laid out per-sample
 - Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))
 - Access to phenotypes table either through Terra (default) or as a local file (structured according to the [GREGOR data model](https://gregorconsortium.org/data-model))
 
 ### Use Cases
-1. Given a variant ID and VCF path, get the allele frequency for the entire cohort
+1. Given a variant ID and VCF path, get the CAF for the entire cohort
    - Get VCF row corresponding to variant ID using a variant -> VCF row index
    - Get phenotypes corresponding to each participants using the phenotypes by patient table
    - Aggregate counts for participants using their genotypes
    - Create CAF object using counts
 
-2. Given a variant ID, VCF path, **and participant list**, get the allele frequency for a subset of participants (subcohort)
-   - Same as 1, just subsetted on a participant list
+2. Given a variant ID, VCF path, **and participant list**, get the CAF for a subset of participants (subcohort)
+   - Same as 1 with cohort subsetted on a participant list
 
-3. Given a variant ID, VCF path, **and phenotype**, get the allele frequency for the cohort conditional on the phenotype
-   - Same as 1, but only increase the counts for the variant of interest if a given patient has the specified phenotype
+3. Given a variant ID, VCF path, **and phenotype**, get the CAF for a subcohort with a specified phenotype
+   - Same as 1, but cohort subsetted on a phenotype
 
-### Arguments
- - `variant_id` (String): variant ID of interest (VRS ID)
- - `vcf_path` (String): path to VCF file
- - `phenotype_table` (String, optional): where to pull phenotype information from. Defaults to None.
- - `participant_list` (List of Strings, optional): Subset of participants to use. Defaults to None.
- - `phenotype` (String, optional): Specific phenotype to subset on. Defaults to None.
+## Plugins for Unique Data Inputs
+
+### Description
+Given the broad variety of data representation used by data generators, we want allele frequency generation to be generalizable for use by any data consortium. One way this is possible is through the use of a plugin architecture
+
+A plugin architecture allows users to customize the aggregation of allelic data specified to their own data model. This handles the problem where...
+1. sample alleles must be aggregated uniquely
+   1. Example: Handling chrX allele counts by sex not determined within the VCF
+2. a project's phenotypical data model must be aggregated uniquely
+   1. Example: Rare disease data is stored in a Terra data table, so disease type needs to be organized by subject ID. Alleles should only be counted if a subject has a particular disease type.
+3. particular samples must be filtered using more complex logic
+   1. Example: samples must have either phenotype A or phenotype B
+
+These map to three different methods that a user can implement:
+1. `create_sample_phenotype_index`: given any set of parameters, output a dictionary mapping from from each sample ID to the list of the sample's phenotypes
+2. `include_sample`: whether to include a sample based on its variant-level or phenotype data
+   1. This uses a `pysam.VariantRecord` as input, which enables us to ensure standardized input.
+   2. A `VariantRecord` contains a swath of data, but minimally, contains .
+   3. To see a worked example on `VariantRecord` usage, see the [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py).
+   4. For more details, consult the pysam [VariantRecord docs](https://pysam.readthedocs.io/en/latest/api.html#pysam.VariantRecord).
+3. `process_sample_genotype`: determine how to sum the alleles of a sample's genotype using variant-level or phenotype data
+   1. This also makes use of a `pysam.VariantRecord` as input
+   2. An `alt_index` is also an input, which describes the index for the allele of interest.
+   3. The alt index matches the genotype according to [VCF specification](https://samtools.github.io/hts-specs/VCFv4.2.pdf), so for instance the 2nd alt corresponds to genotypes of `(2,1)`, `(2,2)`, etc.
+
+For the methods signatures and default implementations, take a look at the [`BasePlugin`](plugin_system/base_plugin.py) class. When implementing your own plugin, take a look at the `StubPlugin` for a starter code for your implementation.
+
+### Usage
+1. Copy [`stub_plugin.py`](plugin_system/plugins/stub_plugin.py)
+2. If desired, rename the plugin class and name (eg `GregorPlugin` and `gregor_plugin.py`)
+3. Implement the three methods, calling any default implementations as necessary
+   1. [`BasePlugin`](plugin_system/base_plugin.py) is by default the parent class, so you can use the `BasePlugin`'s implementations by calling `super().<method_to_invoke>`
+   2. [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
+4. Specify `plugin="GregorPlugin"` in the parameters for `get_cohort_allele_frequency`
+
 
 ### Example Usage on Terra
 ```python
@@ -162,6 +191,7 @@ get_cohort_allele_frequency(
    phenotype_index_path=pheno_index_path
 )
 ```
+
 ### Work in Progress
 - For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
 

@@ -3,12 +3,12 @@ import os
 import pandas as pd
 import pysam
 
-from plugin_system.base_plugin import BasePlugin
+from plugin_system.plugins.base_plugin import BasePlugin
 
 
 class GregorPlugin(BasePlugin):
     """
-    Implementation of methods to aggregrate allele frequency GREGoR data
+    Plugin for GREGoR U08 release data on Terra
     """
 
     def create_sample_phenotype_index(
@@ -101,8 +101,8 @@ class GregorPlugin(BasePlugin):
 
     def process_sample_genotype(
         self,
-        record: pysam.VariantRecord,
         sample_id: str,
+        record: pysam.VariantRecord,
         sample_phenotype_index: dict[str, list[str]],
         alt_index: int,
     ) -> tuple[int, int]:
