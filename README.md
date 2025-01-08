@@ -133,34 +133,34 @@ Given a variant of interest, Create a cohort allele frequency object, subsettabl
 Given the broad variety of data representation used by data generators, we want allele frequency generation to be generalizable for use by any data consortium. One way this is possible is through the use of a plugin architecture
 
 A plugin architecture allows users to customize the aggregation of allelic data specified to their own data model. This handles the problem where...
-1. sample alleles must be aggregated uniquely
+1. a project's phenotypical data model must be aggregated uniquely
+   1. Example: Rare disease data is stored in a Terra data table, so disease type needs to be organized by subject ID. Alleles should only be counted if a subject has a particular disease type
+2. sample alleles must be aggregated uniquely
    1. Example: Handling chrX allele counts by sex not determined within the VCF
-2. a project's phenotypical data model must be aggregated uniquely
-   1. Example: Rare disease data is stored in a Terra data table, so disease type needs to be organized by subject ID. Alleles should only be counted if a subject has a particular disease type.
 3. particular samples must be filtered using more complex logic
    1. Example: samples must have either phenotype A or phenotype B
 
 These map to three different methods that a user can implement:
-1. `create_sample_phenotype_index`: given any set of parameters, output a dictionary mapping from from each sample ID to the list of the sample's phenotypes
-2. `include_sample`: whether to include a sample based on its variant-level or phenotype data
-   1. This uses a `pysam.VariantRecord` as input, which enables us to ensure standardized input.
-   2. A `VariantRecord` contains a swath of data, but minimally, contains .
-   3. To see a worked example on `VariantRecord` usage, see the [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py).
-   4. For more details, consult the pysam [VariantRecord docs](https://pysam.readthedocs.io/en/latest/api.html#pysam.VariantRecord).
+1. `create_sample_phenotype_index`: given any set of parameters, output a dictionary mapping each sample ID to their list of phenotypes
+2. `include_sample`: given a sample's variant-level or phenotype data. deterine whether to include the sample in the allele count
+   1. This takes a `pysam.VariantRecord` as input to represent a particular variant record in a VCF
+   2. To see a worked example on `VariantRecord`, see the [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py).
+   3. For more details, consult the pysam [VariantRecord docs](https://pysam.readthedocs.io/en/latest/api.html#pysam.VariantRecord).
 3. `process_sample_genotype`: determine how to sum the alleles of a sample's genotype using variant-level or phenotype data
    1. This also makes use of a `pysam.VariantRecord` as input
-   2. An `alt_index` is also an input, which describes the index for the allele of interest.
+   2. An `alt_index` is also passed in as an input, which describes the index for the allele of interest.
    3. The alt index matches the genotype according to [VCF specification](https://samtools.github.io/hts-specs/VCFv4.2.pdf), so for instance the 2nd alt corresponds to genotypes of `(2,1)`, `(2,2)`, etc.
 
-For the methods signatures and default implementations, take a look at the [`BasePlugin`](plugin_system/base_plugin.py) class. When implementing your own plugin, take a look at the `StubPlugin` for a starter code for your implementation.
+For the methods signatures and default implementations, take a look at the [`BasePlugin`](plugin_system/plugins/base_plugin.py) class. To implementing your own plugin, take a look at the [`StubPlugin`](plugin_system/plugins/stub_plugin.py) for a starter code for your implementation. For more info on getting started...
 
 ### Usage
 1. Copy [`stub_plugin.py`](plugin_system/plugins/stub_plugin.py)
-2. If desired, rename the plugin class and name (eg `GregorPlugin` and `gregor_plugin.py`)
+2. If desired, rename the plugin class and name (eg `MyProjectPlugin` and `my_project_plugin.py`)
 3. Implement the three methods, calling any default implementations as necessary
    1. [`BasePlugin`](plugin_system/base_plugin.py) is by default the parent class, so you can use the `BasePlugin`'s implementations by calling `super().<method_to_invoke>`
    2. [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
-4. Specify `plugin="GregorPlugin"` in the parameters for `get_cohort_allele_frequency`
+4. Specify `plugin="MyProjectPlugin"` as a parameter when calling `get_cohort_allele_frequency`
+5. The plugin code will be located and run for you, outputting a cohort allele frequency object.
 
 
 ### Example Usage on Terra
