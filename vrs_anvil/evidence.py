@@ -1,207 +1,22 @@
-import io
-import json
 import os
 from pathlib import Path
 import sqlite3
-import pandas as pd
 
 from datetime import datetime
-from firecloud import api as fapi
 from pysam import VariantFile, VariantRecord
-from plugin_system.plugin_manager import PluginManager
+from plugin_system.plugins.base_plugin import BasePlugin
 
 # location to register plugins classes
 PLUGIN_DIR = "plugin_system.plugins"
-
-
-def get_vcf_row(
-    variant_id: str, vcf: VariantFile, index_path: str = None
-) -> VariantRecord:
-    """given a variant id and annotated VCF, get the associated VCF row
-
-    Args:
-        variant_id (str): VRS ID for the variant of interest
-        vcf (VariantFile): Pysam VariantFile
-        index_path (str, optional): Index used to speed up search for variant. Defaults to iterating through VCF.
-
-    Raises:
-        Exception: outputs if no index is found
-
-    Returns:
-        VariantRecord: A Pysam VariantRecord (VCF row)
-    """
-
-    assert "VRS_Allele_IDs" in vcf.header.info, (
-        "no VRS_Allele_IDs key in INFO found, "
-        "please ensure that this is an VRS annotated VCF"
-    )
-
-    # try to populate from Bash env variable
-    if not index_path:
-        assert (
-            "VRS_VCF_INDEX" in os.environ
-        ), "no genotype index specified, no index path was provided nor was a variable name VRS_VCF_INDEX found."
-        index_path = Path(os.environ.get("VRS_VCF_INDEX"))
-
-    if index_path:
-        # if index provided, use it to get VCF row
-        index_path = Path(index_path)
-
-        # find variant of interest
-        for _, chr, pos in fetch_by_vrs_ids([variant_id], index_path):
-            for record in vcf.fetch(f"chr{chr}", pos - 1, pos):
-                # for record in vcf.fetch(chr, pos - 1, pos):
-                if variant_id in record.info["VRS_Allele_IDs"]:
-                    return record
-    else:
-        # otherwise, iterate through VCF
-        for record in enumerate(vcf.fetch()):
-            print(
-                "no VCF index specified, iterating through VCF to locate variant of interest"
-            )
-            if variant_id in record.info["VRS_Allele_IDs"]:
-                return record
-
-    raise Exception(f"no VCF row found matching variant ID {variant_id}")
-
-
-def get_patient_phenotype_index(
-    phenotype_table: str = None, cached_dict: str = None, as_set: bool = False
-) -> dict[str, list | set]:
-    """get index of phenotypes associated with a patient""
-
-    Args:
-        phenotype_table (str, optional): Path to csv/tsv of phenotype data specified by the GREGoR data model.
-                Defaults to pulling from a Terra data table in existing workspace titled "phenotypes".
-                For more info on the data model, see https://gregorconsortium.org/data-model
-        cached_dict (str, optional): Path to cached dictionary to use. Defaults to None.
-        as_set (bool, optional): whether to return each patient's phenotypes as a set rather than a list. Defaults to False.
-
-    Returns:
-        dict: phenotypes associated with each participant
-    """
-
-    # load from cache if exists
-    if cached_dict is not None:
-        if os.path.exists(cached_dict):
-            with open(cached_dict, "r") as file:
-                patient_to_phenotypes = json.load(file)
-
-                # convert phenotypes to sets if specified
-                if as_set:
-                    for patient, pheno_list in patient_to_phenotypes.items():
-                        patient_to_phenotypes[patient] = set(pheno_list)
-
-                return patient_to_phenotypes
-        else:
-            raise Exception(f"path to phenotype index does not exist: {cached_dict}")
-
-    # otherwise generate it
-    return create_patient_phenotype_index(
-        phenotype_table=phenotype_table, as_set=as_set
-    )
-
-
-def create_patient_phenotype_index(
-    phenotype_table: str = None, as_set: bool = False, save_path: str = None
-) -> dict[str, list | set]:
-    """create index from patient to a patient's phenotypes within a Terra environment. If phenotype_table is specified,
-    then it will pull from file rather than from Terra data tables
-
-    Args:
-        phenotype_table (str, optional): Path to csv/tsv of phenotype data specified by the GREGoR data model.
-            Defaults to pulling from a Terra data table in existing workspace titled "phenotypes" making use
-            of WORKSPACE_NAMESPACE and WORKSPACE_NAME preconfigured in Terra analysis environment
-            For more info on the data model, see https://gregorconsortium.org/data-model
-        as_set (bool, optional): Whether to store patient phenotypes as a set rather than a list. Defaults to False.
-        save_path: path to save the patient index
-
-    Raises:
-        Exception: Terra environment not configured as expected or save path does not exist
-
-    Returns:
-        dict: phenotypes associated with each participant
-    """
-
-    if phenotype_table is None:
-        # if unspecified, ensure valid Terra environment
-        for env_key in ["WORKSPACE_NAMESPACE", "WORKSPACE_NAME"]:
-            assert (
-                env_key in os.environ
-            ), f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified."
-
-        # create dataframe from Terra data table
-        # https://github.com/broadinstitute/fiss/blob/master/firecloud/api.py
-        try:
-            response = fapi.get_entities_tsv(
-                os.environ["WORKSPACE_NAMESPACE"],
-                os.environ["WORKSPACE_NAME"],
-                "phenotype",
-                model="flexible",
-            )
-            response.raise_for_status()
-        except Exception as e:
-            if response.json() and e in response.json():
-                error_message = response.json()["message"]
-            else:
-                error_message = e
-            print(
-                f"Error while loading phenotype data table from workspace: \n{error_message}"
-            )
-
-        phenotype_tsv = io.StringIO(response.text)
-        phenotype_df = pd.read_csv(phenotype_tsv, sep="\t")
-    else:
-        # table path specified, parse using that table
-        with open(phenotype_table, "r") as file:
-            if phenotype_table.endswith(".csv"):
-                phenotype_df = pd.read_csv(file)
-            elif phenotype_table.endswith(".tsv"):
-                phenotype_df = pd.read_csv(file, sep="\t")
-            else:
-                raise Exception(
-                    "Only csv and tsv file types implemented for phenotype table"
-                )
-
-    # create patient to phenotype dict
-    phenotype_index = {}
-    for participant_id in phenotype_df["participant_id"].unique():
-        phenotypes = phenotype_df[phenotype_df["participant_id"] == participant_id][
-            "term_id"
-        ].unique()
-
-        phenotype_index[participant_id] = (
-            set(phenotypes) if as_set else list(phenotypes)
-        )
-
-    # save to disk if specified
-    if save_path:
-        if os.path.exists(save_path):
-            raise Exception(
-                f"index already exists at path: {save_path}. Please delete it before continuing"
-            )
-        else:
-            with open(save_path, "w") as file:
-
-                # make it serializable so can be written to disk
-                if as_set:
-                    for patient, pheno_set in phenotype_index.items():
-                        phenotype_index[patient] = list(pheno_set)
-
-                json.dump(phenotype_index, file)
-
-    return phenotype_index
 
 
 def get_cohort_allele_frequency(
     variant_id: str,
     vcf_path: str,
     vcf_index_path: str = None,
-    phenotype_table: str = None,
-    phenotype_index_path: str = None,
     participant_list: list[str] = None,
     phenotype: str = None,
-    plugin_name: str = "GregorPlugin",
+    plugin: BasePlugin = BasePlugin(),
 ) -> dict:
     """Create a cohort allele frequency for either genotypes or phenotypes
 
@@ -221,10 +36,6 @@ def get_cohort_allele_frequency(
         "ga4gh:VA" in variant_id
     ), "variant ID type not yet supported, use VRS ID instead"
 
-    # load plugin of choice
-    plugin_manager = PluginManager(PLUGIN_DIR)
-    plugin = plugin_manager.load_plugin(plugin_name)
-
     # get index of variant to patient
     # in this case, the VCF row of the variant_id
     vcf = VariantFile(vcf_path)
@@ -235,15 +46,6 @@ def get_cohort_allele_frequency(
     alt_index = record.info["VRS_Allele_IDs"].index(variant_id)
     if "REF" not in vcf.header.info["VRS_Allele_IDs"].description:
         alt_index -= 1
-
-    # get index of participant to phenotypes
-    # FIXME: figure out how to do this so it calls get phenotype index instead
-    # phenotype_index = get_patient_phenotype_index(
-    #     phenotype_table=phenotype_table, cached_dict=phenotype_index_path, as_set=True
-    # )
-    phenotype_index = plugin.create_sample_phenotype_index(
-        phenotype_table=phenotype_table, as_set=True
-    )
 
     # create cohort, defaults to all samples listed in VCF
     cohort = (
@@ -270,20 +72,14 @@ def get_cohort_allele_frequency(
         if sample_id not in cohort:
             continue
 
-        # 3. has the phenotype if specified
-        has_specified_phenotype = (
-            sample_id in phenotype_index and phenotype in phenotype_index[sample_id]
-        )
-        if phenotype is not None and not has_specified_phenotype:
-            continue
-
-        # 4. apply any other filters required
-        if not plugin.include_sample(sample_id, record, phenotype, phenotype_index):
+        # 3. matches cohort-specified criteria
+        should_include_sample = plugin.include_sample(sample_id, record, phenotype)
+        if phenotype is not None and not should_include_sample:
             continue
 
         # with these conditions satisfied...
         num_focus_alleles, num_locus_alleles = plugin.process_sample_genotype(
-            sample_id, record, phenotype_index, alt_index
+            sample_id, record, alt_index
         )
 
         # increment allele counts
@@ -301,6 +97,7 @@ def get_cohort_allele_frequency(
             continue
         else:
             # aggregate phenotypes if they exist
+            phenotype_index = plugin.get_phenotype_index()
             if sample_id in phenotype_index:
                 cohort_phenotypes.update(phenotype_index[sample_id])
 
@@ -367,3 +164,54 @@ def fetch_by_vrs_ids(
     data = result.fetchall()
     conn.close()
     return data
+
+
+def get_vcf_row(
+    variant_id: str, vcf: VariantFile, index_path: str = None
+) -> VariantRecord:
+    """given a variant id and annotated VCF, get the associated VCF row
+
+    Args:
+        variant_id (str): VRS ID for the variant of interest
+        vcf (VariantFile): Pysam VariantFile
+        index_path (str, optional): Index used to speed up search for variant. Defaults to iterating through VCF.
+
+    Raises:
+        Exception: outputs if no index is found
+
+    Returns:
+        VariantRecord: A Pysam VariantRecord (VCF row)
+    """
+
+    assert "VRS_Allele_IDs" in vcf.header.info, (
+        "no VRS_Allele_IDs key in INFO found, "
+        "please ensure that this is an VRS annotated VCF"
+    )
+
+    # try to populate from Bash env variable
+    if not index_path:
+        assert (
+            "VRS_VCF_INDEX" in os.environ
+        ), "no genotype index specified, no index path was provided nor was a variable name VRS_VCF_INDEX found."
+        index_path = Path(os.environ.get("VRS_VCF_INDEX"))
+
+    if index_path:
+        # if index provided, use it to get VCF row
+        index_path = Path(index_path)
+
+        # find variant of interest
+        for _, chr, pos in fetch_by_vrs_ids([variant_id], index_path):
+            for record in vcf.fetch(f"chr{chr}", pos - 1, pos):
+                # for record in vcf.fetch(chr, pos - 1, pos):
+                if variant_id in record.info["VRS_Allele_IDs"]:
+                    return record
+    else:
+        # otherwise, iterate through VCF
+        for record in enumerate(vcf.fetch()):
+            print(
+                "no VCF index specified, iterating through VCF to locate variant of interest"
+            )
+            if variant_id in record.info["VRS_Allele_IDs"]:
+                return record
+
+    raise Exception(f"no VCF row found matching variant ID {variant_id}")

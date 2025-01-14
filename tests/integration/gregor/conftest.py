@@ -4,6 +4,10 @@ import pytest
 
 from pysam import VariantFile
 
+from plugin_system.plugin_manager import PluginManager
+from plugin_system.plugins.gregor_plugin import GregorPlugin
+from vrs_anvil.evidence import PLUGIN_DIR
+
 
 @pytest.fixture
 def chrY_vcf_path():
@@ -18,9 +22,7 @@ def chr3_vcf_path():
 
 
 @pytest.fixture()
-def vrs_id_chr3(
-    chr3_vcf_path,
-):
+def vrs_id_chr3(chr3_vcf_path):
     """VRS ID extracted from VCF row with only one alt"""
 
     chrom = "chr3"
@@ -53,19 +55,27 @@ def vrs_vcf_index() -> str:
     return os.environ["VRS_VCF_INDEX"]
 
 
-@pytest.fixture()
-def phenotype_table() -> str:
+@pytest.fixture(scope="module")
+def phenotype_table_path() -> str:
     tests_dir = Path(os.path.dirname(__file__)).parent.parent
-    phenotype_table_path = os.path.join(
-        tests_dir.absolute(), "fixtures/gregor/phenotypes.tsv"
-    )
+    path = os.path.join(tests_dir.absolute(), "fixtures/gregor/phenotypes.tsv")
 
-    print("phenotype_table_path:", phenotype_table_path)
-    if os.path.exists(phenotype_table_path):
-        return str(phenotype_table_path)
+    print("phenotype_table_path:", path)
+    if os.path.exists(path):
+        return str(path)
 
     assert (
         "PHENOTYPE_TABLE" in os.environ
     ), "No phenotype table found, see tests/fixtures/gregor/README.md for setup"
 
     return os.environ["PHENOTYPE_TABLE"]
+
+
+@pytest.fixture(scope="module")
+def gregor_plugin(phenotype_table_path) -> GregorPlugin:
+    # load plugin of choice
+    plugin_manager = PluginManager(PLUGIN_DIR)
+    plugin = plugin_manager.load_plugin("GregorPlugin")
+
+    # instantiate plugin
+    return plugin(phenotype_table_path=phenotype_table_path)

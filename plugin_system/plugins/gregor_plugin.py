@@ -1,9 +1,12 @@
+import io
 import json
 import os
 import pandas as pd
 import pysam
 
+from firecloud import api as fapi
 from plugin_system.plugins.base_plugin import BasePlugin
+from plugin_system.utils import load_dict, csv_to_dataframe, terra_data_table_to_dataframe
 
 
 class GregorPlugin(BasePlugin):
@@ -11,9 +14,32 @@ class GregorPlugin(BasePlugin):
     Plugin for GREGoR U08 release data on Terra
     """
 
-    def create_sample_phenotype_index(
-        self, phenotype_table: str = None, as_set: bool = True, save_path: str = None
-    ) -> dict[str, list[str] | set[str]]:
+    def __init__(self, phenotype_table_path: str | None = None, index_path: str | None = None):
+        self.phenotype_index = self.get_patient_phenotype_index(phenotype_table_path=phenotype_table_path, index_path=index_path)
+
+    def get_patient_phenotype_index(
+        self, phenotype_table_path: str = None, index_path: str = None
+    ) -> dict[str, list | set]:
+        """get index of phenotypes associated with a patient""
+
+        Args:
+            phenotype_table (str, optional): Path to csv/tsv of phenotype data specified by the GREGoR data model.
+                    Defaults to pulling from a Terra data table in existing workspace titled "phenotypes".
+                    For more info on the data model, see https://gregorconsortium.org/data-model
+            cached_dict (str, optional): Path to cached dictionary to use. Defaults to None.
+
+        Returns:
+            dict: phenotypes associated with each participant
+        """
+
+        # load from cache if exists
+        if index_path is not None:
+            return load_dict(index_path)
+
+        # otherwise generate it
+        return self.__create_phenotype_index__(phenotype_table_path=phenotype_table_path)
+
+    def __create_phenotype_index__(self, phenotype_table_path: str = None) -> dict[str, list[str] | set[str]]:
         """given phenotypical data input specified by the GREGoR Data model (in either tsv/csv or Terra data table),
         return a dict mapping from each sample id to the sample's list of phenotypes
 
@@ -21,89 +47,40 @@ class GregorPlugin(BasePlugin):
             dict[str, list[str]]: index of a sample id to sample's phenotypes
         """
 
-        if phenotype_table is None:
-            # if unspecified, ensure valid Terra environment
-            for env_key in ["WORKSPACE_NAMESPACE", "WORKSPACE_NAME"]:
-                assert (
-                    env_key in os.environ
-                ), f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified."
-
-            # create dataframe from Terra data table
-            # https://github.com/broadinstitute/fiss/blob/master/firecloud/api.py
-            try:
-                response = fapi.get_entities_tsv(
-                    os.environ["WORKSPACE_NAMESPACE"],
-                    os.environ["WORKSPACE_NAME"],
-                    "phenotype",
-                    model="flexible",
-                )
-                response.raise_for_status()
-            except Exception as e:
-                if response.json() and e in response.json():
-                    error_message = response.json()["message"]
-                else:
-                    error_message = e
-                print(
-                    f"Error while loading phenotype data table from workspace: \n{error_message}"
-                )
-
-            phenotype_tsv = io.StringIO(response.text)
-            phenotype_df = pd.read_csv(phenotype_tsv, sep="\t")
+        # load table from within workspace using Terra Data Table or from csv/tsv
+        if phenotype_table_path is None:
+            phenotype_df = terra_data_table_to_dataframe(table_name="phenotype")
         else:
-            # table path specified, parse using that table
-            with open(phenotype_table, "r") as file:
-                if phenotype_table.endswith(".csv"):
-                    phenotype_df = pd.read_csv(file)
-                elif phenotype_table.endswith(".tsv"):
-                    phenotype_df = pd.read_csv(file, sep="\t")
-                else:
-                    raise Exception(
-                        "Only csv and tsv file types implemented for phenotype table"
-                    )
+            phenotype_df = csv_to_dataframe(phenotype_table_path)
 
-        # create patient to phenotype dict
+        # create participant to phenotypes mapping
         phenotype_index = {}
         for participant_id in phenotype_df["participant_id"].unique():
-            phenotypes = phenotype_df[phenotype_df["participant_id"] == participant_id][
+            all_phenotypes = phenotype_df[phenotype_df["participant_id"] == participant_id][
                 "term_id"
-            ].unique()
+            ]
 
-            phenotype_index[participant_id] = (
-                set(phenotypes) if as_set else list(phenotypes)
-            )
-
-        # save to disk if specified
-        if save_path:
-            if os.path.exists(save_path):
-                raise Exception(
-                    f"index already exists at path: {save_path}. Please delete it before continuing"
-                )
-            else:
-                with open(save_path, "w") as file:
-
-                    # make it serializable so can be written to disk
-                    if as_set:
-                        for patient, pheno_set in phenotype_index.items():
-                            phenotype_index[patient] = list(pheno_set)
-
-                    json.dump(phenotype_index, file)
+            phenotype_index[participant_id] = list(all_phenotypes.unique())
 
         return phenotype_index
 
-    def include_sample(self, sample_id: str, record: pysam.VariantRecord, phenotype: str, sample_phenotype_index: dict[str, list[str]]) -> bool:
+    def include_sample(self, sample_id: str, record: pysam.VariantRecord, phenotype: str) -> bool:
         """given a sample id and its genotype and phenotype of interest, determine whether to include it in the allele counts
 
         Returns:
             bool: whether to include the sample
         """
+        has_specified_phenotype = (
+            sample_id in self.phenotype_index and phenotype in self.phenotype_index[sample_id]
+        )
+
         # TODO: possibly implement filtering by sex of participant
-        return True
+        return has_specified_phenotype
 
     def process_sample_genotype(
         self,
         sample_id: str,
         record: pysam.VariantRecord,
-        sample_phenotype_index: dict[str, list[str]],
         alt_index: int,
     ) -> tuple[int, int]:
         """given a genotype for a particular sample, count the genotype
@@ -116,26 +93,27 @@ class GregorPlugin(BasePlugin):
             tuple[int, int]: number of focus (specified) alleles, followed by number of locus (total) alleles.
         """
 
-        # FIXME: support for hemizygous regions (chrX / mitochondrial variants)
-        # GREGOR makes use of DRAGEN's continuous allele frequency approach:
+        # FIXME: support for hemizygous regions (chrY / mitochondrial variants)
+        # GREGOR uses DRAGEN's continuous allele frequency approach:
         # https://support-docs.illumina.com/SW/DRAGEN_v40/Content/SW/DRAGEN/MitochondrialCalling.htm
         within_hemizygous_region = record.chrom in ["chrM", "chrY"]
         within_x_chr = record.chrom == "chrX"
 
-        # increment focus allele count, handling multiple alts edge case
+        # get focus allele count, handling if there are multiple alts
         alleles = record.samples[sample_id].allele_indices
         num_focus_alleles = sum(
             [1 for _, alt_number in enumerate(alleles) if alt_number == alt_index]
         )
+
         if within_hemizygous_region and num_focus_alleles > 0:
             num_focus_alleles = 1
 
-        # increment total allele count
+        # get total allele count
         if within_hemizygous_region:
             num_total_alleles = 1
         elif within_x_chr:
             # FIXME: make use of sex of participant?
-            # by default considers all chrX samples as diploid
+            # by default considers all chrX samples as diploid (regardless of sex)
             is_female = True
             num_total_alleles = 2 if is_female else 1
         else:

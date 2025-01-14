@@ -9,7 +9,6 @@ from plugin_system.plugins.base_plugin import BasePlugin
 class PluginManager:
     def __init__(self, plugin_package: str):
         self.plugin_package = plugin_package
-        self.plugin = None
 
     def load_plugin(self, plugin_name: str) -> BasePlugin:
         # find and import all modules in the specified package
@@ -30,9 +29,6 @@ class PluginManager:
                         if isinstance(attribute, type) and hasattr(
                             attribute, "__is_plugin__"
                         ):
-                            self.plugin = attribute()
-
-                        return self.plugin
-
+                            return attribute
             except ImportError as e:
                 print(f"Error loading plugin {name}: {e}")

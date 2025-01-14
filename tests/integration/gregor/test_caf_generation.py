@@ -85,7 +85,7 @@ def test_remote_vcf(chrY_vcf_path, start, stop, expected_record_count):
         raise e
 
 
-def test_allele_counts_first_5_rows(chr3_vcf_path, vrs_vcf_index, phenotype_table):
+def test_allele_counts_first_5_rows(chr3_vcf_path, vrs_vcf_index, gregor_plugin):
     """test that the calculated allele counts with no phenotype specified matches
     the actual counts stored in the INFO of the first 10 rows. Works for diploid (non-sex) variants
     """
@@ -112,7 +112,7 @@ def test_allele_counts_first_5_rows(chr3_vcf_path, vrs_vcf_index, phenotype_tabl
                 allele_id,
                 chr3_vcf_path,
                 vcf_index_path=vrs_vcf_index,
-                phenotype_table=phenotype_table,
+                plugin=gregor_plugin,
             )
 
             print("alt_index", alt_index)
@@ -132,14 +132,14 @@ def test_allele_counts_first_5_rows(chr3_vcf_path, vrs_vcf_index, phenotype_tabl
 
 
 def test_correct_caf_given_chr3_variant(
-    vrs_id_chr3, chr3_vcf_path, vrs_vcf_index, phenotype_table
+    vrs_id_chr3, chr3_vcf_path, vrs_vcf_index, gregor_plugin
 ):
     """test caf generation with default parameters and no phenotype specified"""
     caf = get_cohort_allele_frequency(
         vrs_id_chr3,
         chr3_vcf_path,
         vcf_index_path=vrs_vcf_index,
-        phenotype_table=phenotype_table,
+        plugin=gregor_plugin,
     )
     print(json.dumps(caf))
 
@@ -173,7 +173,7 @@ def test_correct_caf_given_chr3_variant(
 
 
 def test_correct_caf_given_chr3_variant_and_pheno(
-    vrs_id_chr3, chr3_vcf_path, vrs_vcf_index, phenotype_table
+    vrs_id_chr3, chr3_vcf_path, vrs_vcf_index, gregor_plugin
 ):
     """test caf generation for diploid variant with a specified phenotype"""
 
@@ -183,7 +183,7 @@ def test_correct_caf_given_chr3_variant_and_pheno(
         vrs_id_chr3,
         chr3_vcf_path,
         vcf_index_path=vrs_vcf_index,
-        phenotype_table=phenotype_table,
+        plugin=gregor_plugin,
         phenotype=phenotype,
     )
     print(json.dumps(caf))
@@ -218,7 +218,7 @@ def test_correct_caf_given_chr3_variant_and_pheno(
 
 
 def test_correct_allele_freq_for_multi_alts_chrY_variant(
-    vrs_id_chrY, chrY_vcf_path, vrs_vcf_index, phenotype_table
+    vrs_id_chrY, chrY_vcf_path, vrs_vcf_index, gregor_plugin
 ):
     """for a vcf row with multiple alts, test caf generation with default parameters and no phenotype specified"""
 
@@ -227,7 +227,7 @@ def test_correct_allele_freq_for_multi_alts_chrY_variant(
         vrs_id_chrY,
         chrY_vcf_path,
         vcf_index_path=vrs_vcf_index,
-        phenotype_table=phenotype_table,
+        plugin=gregor_plugin,
     )
 
     # logs
@@ -254,7 +254,7 @@ def test_correct_allele_freq_for_multi_alts_chrY_variant(
 
 
 def test_correct_allele_freq_for_multi_alts_chrY_variant_and_phenotype(
-    vrs_id_chrY, chrY_vcf_path, vrs_vcf_index, phenotype_table
+    vrs_id_chrY, chrY_vcf_path, vrs_vcf_index, gregor_plugin
 ):
     """test caf generation specifying both a variant and a phenotype of interest"""
 
@@ -263,7 +263,7 @@ def test_correct_allele_freq_for_multi_alts_chrY_variant_and_phenotype(
         vrs_id_chrY,
         chrY_vcf_path,
         vcf_index_path=vrs_vcf_index,
-        phenotype_table=phenotype_table,
+        plugin=gregor_plugin,
         phenotype=phenotype,
     )
     print(json.dumps(caf))

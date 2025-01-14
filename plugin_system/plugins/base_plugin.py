@@ -1,22 +1,25 @@
 import pysam
 
+from abc import ABC
 
-class BasePlugin:
+
+class BasePlugin(ABC):
     """
     Interface for caf generation plugins
     """
 
     __is_plugin__ = True
 
-    def create_sample_phenotype_index(self) -> dict[str, list[str] | set[str]]:
-        """given any arbitrary phenotypical data input, return a dict mapping from each sample id to the sample's list of phenotypes
+    def __init__(self, phenotype_index: dict[str, list[str]] | None = None):
+        self.phenotype_index = phenotype_index
+
+    def get_phenotype_index(self) -> dict[str, list[str]]:
+        """getter for a dict mapping from each sample id to the sample's list of phenotypes
 
         Returns:
             dict[str, list[str] | set[str]]: index of a sample id to sample's phenotypes
         """
-        raise NotImplementedError(
-            "Plugins must implement sample-to-phenotype index method"
-        )
+        return self.phenotype_index
 
     def include_sample(self, sample_id: str, record: pysam.VariantRecord, phenotype: str, sample_phenotype_index: dict[str, list[str]]) -> bool:
         """given a sample id, determine whether to include it in the allele counts
@@ -38,7 +41,7 @@ class BasePlugin:
         record: pysam.VariantRecord,
         alt_index: int,
     ) -> tuple[int, int]:
-        """given a genotype for a particular sample, determine how to sum its alleles
+        """given a genotype for a particular sample, determine its allele counts
 
         Args:
             sample_id (str): sample_id used to uniquly identify a sample ID
@@ -47,7 +50,7 @@ class BasePlugin:
             alt_index (int): index matching the variant of interest
 
         Returns:
-            tuple[int, int]: number of focus (specified) alleles, followed by number of locus (total) alleles.
+            tuple[int, int]: number of focus (specified) alleles, then number of locus (total) alleles.
         """
 
         # increment focus allele count, handling multiple alts edge case
