@@ -56,7 +56,6 @@ def participants(record: VariantRecord) -> Generator[str, None, None]:
         assert "GT" in values, "Genotype (GT) is required"
         # see https://samtools.github.io/hts-specs/VCFv4.1.pdf
 
-        # TODO - this test is a bit naive, should we be more robust. consider AD, GQ, RGQ?
         if any(values["GT"]):
             yield participant
 

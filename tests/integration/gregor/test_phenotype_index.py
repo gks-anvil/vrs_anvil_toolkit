@@ -1,7 +1,14 @@
+import os
+from pathlib import Path
 from pysam import VariantFile
 
+from plugin_system.plugins.gregor_plugin import GregorPlugin
+from plugin_system.utils import load_dict, save_dict
 
-def test_get_phenotypes_from_vcf_row(chrY_vcf_path, gregor_plugin):
+
+def test_gregor_plugin_creates_correct_phenotype_index(
+    chrY_vcf_path: str, gregor_plugin: GregorPlugin
+):
     """creates phenotypes index and calculate list of unique phenotypes for the first five rows,
     checking total unique phenotypes the last row"""
 
@@ -40,33 +47,18 @@ def test_get_phenotypes_from_vcf_row(chrY_vcf_path, gregor_plugin):
             break
 
 
-# TODO / FIXME: refactor so that saving phenotype index and grabbing it exists in the GREGoR plugin
-# def test_save_and_use_phenotype_index_from_path(tmp_path, gregor_plugin):
-#     """creates and saves a phenotype index from phenotype csv, then loads it back in"""
+def test_loading_gregor_phenotype_index_by_path(
+    gregor_plugin: GregorPlugin, tmp_path: Path
+):
+    os.chdir(tmp_path)
 
-#     # write to index
-#     os.chdir(tmp_path)
-#     save_path = "index.json"
-#     phenotype_index = gregor_plugin.get_patient_phenotype_index
+    index = gregor_plugin.get_phenotype_index()
+    save_path = "index.json"
+    save_dict(index, save_path)
 
-#     patient, saved_phenos = list(phenotype_index.items())[0]
-#     assert isinstance(
-#         saved_phenos, list
-#     ), "phenotypes in index are not returned as a list by default"
+    loaded_index = load_dict(save_path)
 
-#     # read in from index
-#     # TODO: not accessible to programatically use cache, revise source code
-#     assert os.path.exists(
-#         save_path
-#     ), f"phenotype index file not being written to disk to save path {save_path}"
-#     loaded_pheno_index = get_patient_phenotype_index(cached_dict=save_path, as_set=True)
-
-#     # ensure phenotypes returned as a set
-#     assert patient in loaded_pheno_index
-#     loaded_phenos = loaded_pheno_index[patient]
-#     assert isinstance(
-#         loaded_phenos, set
-#     ), f"expected phenotype index values to be a set, but are {type(loaded_phenos)} instead despite specifying as_set=True"
-
-#     # check values are loaded as expected
-#     assert set(saved_phenos) == loaded_phenos
+    assert (
+        index == loaded_index
+    ), "saved index does not match loaded index... use -vv flag for a better diff"
+    os.remove(save_path)

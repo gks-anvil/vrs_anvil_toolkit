@@ -32,3 +32,4 @@ class PluginManager:
                             return attribute
             except ImportError as e:
                 print(f"Error loading plugin {name}: {e}")
+                raise

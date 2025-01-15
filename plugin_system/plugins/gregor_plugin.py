@@ -15,42 +15,30 @@ class GregorPlugin(BasePlugin):
     """
 
     def __init__(self, phenotype_table_path: str | None = None, index_path: str | None = None):
-        self.phenotype_index = self.get_patient_phenotype_index(phenotype_table_path=phenotype_table_path, index_path=index_path)
+        self.phenotype_index = self.__create_phenotype_index__(phenotype_table_path=phenotype_table_path, index_path=index_path)
 
-    def get_patient_phenotype_index(
-        self, phenotype_table_path: str = None, index_path: str = None
-    ) -> dict[str, list | set]:
-        """get index of phenotypes associated with a patient""
+    def __create_phenotype_index__(self, phenotype_table_path: str | None = None, index_path: str | None = None) -> dict[str, list[str] | set[str]]:
+        """given phenotypical data input specified by the GREGoR Data model (in either tsv/csv/Terra data table),
+        return a dictionary mapping from each sample to its list of phenotypes
 
         Args:
-            phenotype_table (str, optional): Path to csv/tsv of phenotype data specified by the GREGoR data model.
-                    Defaults to pulling from a Terra data table in existing workspace titled "phenotypes".
+            phenotype_table_path (str, optional): Path to csv/tsv of phenotype data specified by the GREGoR data model.
+                    When not specified, defaults to loading from Terra data table in existing workspace titled "phenotypes".
                     For more info on the data model, see https://gregorconsortium.org/data-model
-            cached_dict (str, optional): Path to cached dictionary to use. Defaults to None.
+            index_path (str, optional): Path to pre-computed index. Defaults to None.
 
         Returns:
-            dict: phenotypes associated with each participant
+            dict[str, list[str]]: index of a sample id to sample's phenotypes. For example: {"patient_A": ["lactose intolerance", "anxiety"], "patient_B": ["shortness of breath"]}
         """
 
-        # load from cache if exists
+        # load index from file if already created
         if index_path is not None:
             return load_dict(index_path)
 
-        # otherwise generate it
-        return self.__create_phenotype_index__(phenotype_table_path=phenotype_table_path)
-
-    def __create_phenotype_index__(self, phenotype_table_path: str = None) -> dict[str, list[str] | set[str]]:
-        """given phenotypical data input specified by the GREGoR Data model (in either tsv/csv or Terra data table),
-        return a dict mapping from each sample id to the sample's list of phenotypes
-
-        Returns:
-            dict[str, list[str]]: index of a sample id to sample's phenotypes
-        """
-
-        # load table from within workspace using Terra Data Table or from csv/tsv
+        # if no path specified, load phenotype table from Terra Data Table by default (must be in Terra workspace)
         if phenotype_table_path is None:
             phenotype_df = terra_data_table_to_dataframe(table_name="phenotype")
-        else:
+        else: # otherwise load phenotype data table from file
             phenotype_df = csv_to_dataframe(phenotype_table_path)
 
         # create participant to phenotypes mapping
@@ -65,7 +53,7 @@ class GregorPlugin(BasePlugin):
         return phenotype_index
 
     def include_sample(self, sample_id: str, record: pysam.VariantRecord, phenotype: str) -> bool:
-        """given a sample id and its genotype and phenotype of interest, determine whether to include it in the allele counts
+        """determine whether to include a sample in the cohort allele frequency based on its variant data and phenotypic traits
 
         Returns:
             bool: whether to include the sample
@@ -83,11 +71,13 @@ class GregorPlugin(BasePlugin):
         record: pysam.VariantRecord,
         alt_index: int,
     ) -> tuple[int, int]:
-        """given a genotype for a particular sample, count the genotype
+        """given a sample's genotype, return focus and locus allele counts
 
         Args:
-            sample (pysam.VariantRecordSample): _description_
-            patient_phenotype_index (dict[str, list[str]]): _description_
+            sample_id (str): sample_id used to uniquly identify a sample ID
+            record (pysam.VariantRecord): pysam record object representing a VCF row
+            sample_phenotype_index (dict[str, list[str]]): mapping from sample IDs to each sample list of phenotypes
+            alt_index (int): index matching the variant of interest
 
         Returns:
             tuple[int, int]: number of focus (specified) alleles, followed by number of locus (total) alleles.

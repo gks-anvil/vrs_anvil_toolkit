@@ -32,9 +32,8 @@ def load_dict(path):
 def terra_data_table_to_dataframe(table_name) -> pd.DataFrame:
     # if unspecified, ensure valid Terra environment
         for env_key in ["WORKSPACE_NAMESPACE", "WORKSPACE_NAME"]:
-            assert (
-                env_key in os.environ
-            ), f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified."
+            if env_key not in os.environ:
+                raise Exception(f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified.")
 
         # create dataframe from Terra data table
         # https://github.com/broadinstitute/fiss/blob/master/firecloud/api.py
