@@ -5,12 +5,13 @@ import os
 from firecloud import api as fapi
 import pandas as pd
 
-''''''''''''''''''''''''''''''''''''
-'  utilities for transforming data '
-''''''''''''''''''''''''''''''''''''
+####################################
+#  utilities for transforming data #
+####################################
+
 
 def save_dict(d, path):
-# save to disk if specified
+    # save to disk if specified
     if path:
         if os.path.exists(path):
             raise Exception(
@@ -28,34 +29,38 @@ def load_dict(path):
             return d
     else:
         raise OSError(f"path to phenotype index does not exist: {path}")
-\
+
+
 def terra_data_table_to_dataframe(table_name) -> pd.DataFrame:
     # if unspecified, ensure valid Terra environment
-        for env_key in ["WORKSPACE_NAMESPACE", "WORKSPACE_NAME"]:
-            if env_key not in os.environ:
-                raise Exception(f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified.")
-
-        # create dataframe from Terra data table
-        # https://github.com/broadinstitute/fiss/blob/master/firecloud/api.py
-        try:
-            response = fapi.get_entities_tsv(
-                os.environ["WORKSPACE_NAMESPACE"],
-                os.environ["WORKSPACE_NAME"],
-                table_name,
-                model="flexible",
-            )
-            response.raise_for_status()
-        except Exception as e:
-            if response.json() and e in response.json():
-                error_message = response.json()["message"]
-            else:
-                error_message = e
-            print(
-                f"Error while loading phenotype data table from workspace: \n{error_message}"
+    for env_key in ["WORKSPACE_NAMESPACE", "WORKSPACE_NAME"]:
+        if env_key not in os.environ:
+            raise Exception(
+                f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified."
             )
 
-        phenotype_tsv = io.StringIO(response.text)
-        return pd.read_csv(phenotype_tsv, sep="\t")
+    # create dataframe from Terra data table
+    # https://github.com/broadinstitute/fiss/blob/master/firecloud/api.py
+    try:
+        response = fapi.get_entities_tsv(
+            os.environ["WORKSPACE_NAMESPACE"],
+            os.environ["WORKSPACE_NAME"],
+            table_name,
+            model="flexible",
+        )
+        response.raise_for_status()
+    except Exception as e:
+        if response.json() and e in response.json():
+            error_message = response.json()["message"]
+        else:
+            error_message = e
+        print(
+            f"Error while loading phenotype data table from workspace: \n{error_message}"
+        )
+
+    phenotype_tsv = io.StringIO(response.text)
+    return pd.read_csv(phenotype_tsv, sep="\t")
+
 
 def csv_to_dataframe(path):
     # table path specified, parse using that table

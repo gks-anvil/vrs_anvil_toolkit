@@ -21,7 +21,9 @@ class BasePlugin(ABC):
         """
         return self.phenotype_index
 
-    def include_sample(self, sample_id: str, record: pysam.VariantRecord, phenotype: str) -> bool:
+    def include_sample(
+        self, sample_id: str, record: pysam.VariantRecord, phenotype: str
+    ) -> bool:
         """determine whether to include a sample in the cohort allele frequency based on its variant data and phenotypic traits
 
         Args:
