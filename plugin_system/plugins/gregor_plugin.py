@@ -1,6 +1,5 @@
 import pysam
 
-from firecloud import api as fapi
 from plugin_system.plugins.base_plugin import BasePlugin
 from plugin_system.utils import (
     load_dict,
