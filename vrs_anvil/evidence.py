@@ -13,9 +13,9 @@ PLUGIN_DIR = "plugin_system.plugins"
 def get_cohort_allele_frequency(
     variant_id: str,
     vcf_path: str,
-    vcf_index_path: str = None,
-    participant_list: list[str] = None,
-    phenotype: str = None,
+    vcf_index_path: str | None = None,
+    participant_list: list[str] | None = None,
+    phenotype: str | None = None,
     plugin: BasePlugin = BasePlugin(),
 ) -> dict:
     """Create a cohort allele frequency for either genotypes or phenotypes
@@ -72,7 +72,7 @@ def get_cohort_allele_frequency(
         if sample_id not in cohort:
             continue
 
-        # 3. matches cohort-specified criteria
+        # 3. matches subcohort criteria
         should_include_sample = plugin.include_sample(sample_id, record, phenotype)
         if phenotype is not None and not should_include_sample:
             continue
@@ -98,7 +98,7 @@ def get_cohort_allele_frequency(
         else:
             # aggregate phenotypes if they exist
             phenotype_index = plugin.get_phenotype_index()
-            if sample_id in phenotype_index:
+            if phenotype_index is not None and sample_id in phenotype_index:
                 cohort_phenotypes.update(phenotype_index[sample_id])
 
     # populate final caf dict

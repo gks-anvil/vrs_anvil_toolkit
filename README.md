@@ -108,7 +108,7 @@ Given a variant of interest and an optional phenotype of interest, get its aggre
 
 ### General Prerequisites
 - Variant of interest
-- Valid joint VCF
+- Valid VRS-annotated joint VCF
   - Assumes chr field is prepended with chr (eg `chr1`)
   - genotyping laid out per-sample
 - Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))

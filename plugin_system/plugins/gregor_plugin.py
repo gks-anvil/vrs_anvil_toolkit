@@ -1,10 +1,5 @@
-import io
-import json
-import os
-import pandas as pd
 import pysam
 
-from firecloud import api as fapi
 from plugin_system.plugins.base_plugin import BasePlugin
 from plugin_system.utils import (
     load_dict,
@@ -16,19 +11,34 @@ from plugin_system.utils import (
 class GregorPlugin(BasePlugin):
     """
     Plugin for GREGoR U08 release data on Terra
+
+    Note that get_phenotype_index is inherited from the parent BasePlugin class.
     """
 
     def __init__(
         self, phenotype_table_path: str | None = None, index_path: str | None = None
     ):
-        self.phenotype_index = self.__create_phenotype_index__(
+        """constructor used to set a phenotype index if provided a file path for the index (index_path).
+        Otherwise create a phenotype index using a Terra data table (no path specified) or with a csv/tsv filepath.
+
+        Index example: {"sample_A": ["HP:0001263", "HP:0000002"], "sample_B": ["HP:0001263"]}
+        Note that we actively do not use super() to invoke the BasePlugin's constructor to create custom functionality.
+
+        Args:
+            phenotype_table_path (str, optional): Path to csv/tsv of phenotype data specified by the GREGoR data model.
+                When not specified, defaults to loading from Terra data table in existing workspace titled "phenotypes".
+                For more info on the data model, see https://gregorconsortium.org/data-model. Defaults to None.
+            index_path (str, optional): Path to existing phenotype index. Defaults to None.
+        """
+
+        self.phenotype_index = self.__create_phenotype_index(
             phenotype_table_path=phenotype_table_path, index_path=index_path
         )
 
-    def __create_phenotype_index__(
+    def __create_phenotype_index(
         self, phenotype_table_path: str | None = None, index_path: str | None = None
-    ) -> dict[str, list[str] | set[str]]:
-        """given phenotypical data input specified by the GREGoR Data model (in either tsv/csv/Terra data table),
+    ) -> dict[str, list[str]]:
+        """[private method] given phenotypical data input specified by the GREGoR Data model (in either tsv/csv/Terra data table),
         return a dictionary mapping from each sample to its list of phenotypes
 
         Args:
@@ -38,7 +48,7 @@ class GregorPlugin(BasePlugin):
             index_path (str, optional): Path to pre-computed index. Defaults to None.
 
         Returns:
-            dict[str, list[str]]: index of a sample id to sample's phenotypes. For example: {"patient_A": ["lactose intolerance", "anxiety"], "patient_B": ["shortness of breath"]}
+            dict[str, list[str]]: index of a sample id to sample's phenotypes.
         """
 
         # load index from file if already created
@@ -65,18 +75,20 @@ class GregorPlugin(BasePlugin):
     def include_sample(
         self, sample_id: str, record: pysam.VariantRecord, phenotype: str
     ) -> bool:
-        """determine whether to include a sample in the cohort allele frequency based on its variant data and phenotypic traits
+        """determine whether to include a sample in the cohort allele frequency based on its variant data and phenotypic traits.
+        Directly inherit implementation from base plugin
+
+        Args:
+            sample_id (str): sample_id used to uniquly identify a sample ID
+            record (pysam.VariantRecord): PySam record object representing a VCF row
+            phenotype (str): phenotype of interest, matching phenotype codes used in sample_phenotype_)index
 
         Returns:
             bool: whether to include the sample
         """
-        has_specified_phenotype = (
-            sample_id in self.phenotype_index
-            and phenotype in self.phenotype_index[sample_id]
-        )
 
         # TODO: possibly implement filtering by sex of participant
-        return has_specified_phenotype
+        return super().include_sample(sample_id, record, phenotype)
 
     def process_sample_genotype(
         self,
