@@ -171,7 +171,7 @@ To implement your own plugin....
    3. See [`SimplePlugin`](plugin_system/plugins/base_plugin.py) for the simplest possible implementation of a plugin using only default methods inherited from `BasePlugin`.
 
 **Plugin User**
-1. Confirm that you have the variant of interest and VCF path of interest at your disposal
+1. Confirm that you have the variant of interest, [optional] phenotype of interest, VCF path of interest at your disposal, and name of implemented plugin class
 2. See the `test_plugin_worked_example` function in [test_plugin.py](tests/unit/test_plugin.py) for a worked example on how to use plugin. The two main components of using the plugin are...
    1. For your `MyProjectPlugin` plugin, instantiate it with the `PluginManager` and any input parameters specified.
    2. Call `get_cohort_allele_frequency` with `plugin="MyProjectPlugin"` as a parameter.
