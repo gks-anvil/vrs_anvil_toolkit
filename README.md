@@ -104,7 +104,7 @@ The command line utility supports Google Cloud URIs and running commands in the 
 ## Cohort Allele Frequency Generation
 
 ### Description
-Given a variant of interest and an optional phenotype of interest, get its aggregated allele frequency information as a cohort allele frequency object (CAF).
+Given a variant and an optional phenotype of interest, get aggregated allele frequency info for a cohort of interest as a cohort allele frequency object (CAF).
 
 ### General Prerequisites
 - Variant of interest
@@ -112,8 +112,10 @@ Given a variant of interest and an optional phenotype of interest, get its aggre
   - Assumes chr field is prepended with chr (eg `chr1`)
   - genotyping laid out per-sample
 - Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))
-- Phenotype of interest, if desired
-- Plugins for project-specific transformations (see [here](README.md#plugins-for-unique-data-inputs) for more info)
+  - This maps VCF coordinates to VRS IDs
+  - Enables efficient retrieval of VCF row by VRS ID
+- [Optional] Phenotype of interest to specify subcohort
+- [Optional] Plugins for project-specific transformations (see [here](README.md#plugins-for-unique-data-inputs) for more info)
 
 ### Use Cases
 1. Given a variant ID and VCF path, get the CAF for the entire cohort
@@ -134,36 +136,45 @@ Given a variant of interest and an optional phenotype of interest, get its aggre
 ### Description
 Given the broad variety of data representation used by data generators, we want to be able to generate CAFs for any data consortium. One way this is possible is through the use of a plugin architecture.
 
-A plugin architecture allows users to customize the aggregation of allelic data specified to their own data model. This addresses the problem where...
+A plugin architecture allows users to customize the aggregation of cohort data specified to their data model. This addresses the problem where...
 1. a user has a project-specific phenotype data model
    1. Example: sample-level rare disease data is stored in an unaggregated Terra data table
 2. a user is interested in a subset of the cohort based on particular filters
    1. Example: samples must have phenotype A and a minimum read depth to be included in the subcohort
-3. each sample's genotype must be aggregated uniquely depending on particular traits
+3. each sample's genotype must be calculated uniquely depending on particular traits
    1. Example: sex is not represented within the VCF, so a user needs to integrate sample-level phenotype data to get accurate counts for chrX variants
 
-These map to three different methods in a given `Plugin` class:
+These three problems above map to three different methods necessary in implementing a `Plugin`:
 1. `__init__`: Given any set of parameters, create a phenotype index that maps each sample to its list of phenotypes.
 2. `include_sample`: given a sample's variant-level or phenotype data, determine whether to include the sample in the allele count
    1. This takes a `pysam.VariantRecord` as input to represent a particular variant record in a VCF
    2. For more details, consult the pysam [VariantRecord docs](https://pysam.readthedocs.io/en/latest/api.html#pysam.VariantRecord).
 3. `process_sample_genotype`: determine how to sum the alleles of a sample's genotype using variant-level or phenotype data
    1. This also makes use of a `pysam.VariantRecord` as input
-   2. An `alt_index` is also passed in as an input, which describes the index for the allele of interest.
-   3. The alt index matches the genotype according to [VCF specification](https://samtools.github.io/hts-specs/VCFv4.2.pdf). For instance, a sample with the 2nd alt might have a genotype containing a 2, ie `(2,1)`, `(2,0)`, `(2,2)`, etc.
+   2. An `alt_index` is also passed in as an input, which is the index representing the allele of interest within the VCF row. The alt index matches the genotype according to [VCF specification](https://samtools.github.io/hts-specs/VCFv4.2.pdf). For instance, a sample with the 2nd alt might have a genotype containing a 2, ie `(2,1)`, `(2,0)`, `(2,2)`, etc.
 
-For the methods signatures and default implementations, take a look at the [`BasePlugin`](plugin_system/plugins/base_plugin.py) class. For an example plugin, take a look at the [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py). To implement your own plugin....
+**Existing Plugins**
+- For the methods signatures and default implementations, take a look at the [`BasePlugin`](plugin_system/plugins/base_plugin.py) class
+- For a simple plugin implementation that inherits all methods from the `BasePlugin`, take a look at the [`SimplePlugin`](plugin_system/plugins/base_plugin.py) implementation.
+- For an example plugin, take a look at the [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py)
+
+To implement your own plugin....
 
 ### Getting Started
+
+**Plugin Implementer**
 1. Copy [`gregor_plugin.py`](plugin_system/plugins/gregor_plugin.py) to the same directory
 2. Rename the plugin class and name (eg `MyProjectPlugin` and `my_project_plugin.py`)
-3. Implement the three methods mentioned above, calling any default implementations as necessary
+3. Implement the three methods mentioned above, calling any default implementations or plugin [utilities](plugin_system/utils.py) as necessary.
    1. [`BasePlugin`](plugin_system/base_plugin.py) is by default the parent class, so you can use the `BasePlugin`'s implementations by calling `super().<method_to_invoke>`
    2. [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
-4. See this [starter code](scripts/plugin_usage_example.py) for a worked example on how to use the plugin. The two main components of using the plugin are...
+   3. See [`SimplePlugin`](plugin_system/plugins/base_plugin.py) for the simplest possible implementation of a plugin using only default methods inherited from `BasePlugin`.
+
+**Plugin User**
+1. Confirm that you have the variant of interest and VCF path of interest at your disposal
+2. See the `test_plugin_worked_example` function in [test_plugin.py](tests/unit/test_plugin.py) for a worked example on how to use plugin. The two main components of using the plugin are...
    1. For your `MyProjectPlugin` plugin, instantiate it with the `PluginManager` and any input parameters specified.
    2. Call `get_cohort_allele_frequency` with `plugin="MyProjectPlugin"` as a parameter.
-   3.
 
 # GREGoR-specific Details
 
@@ -171,7 +182,7 @@ For the methods signatures and default implementations, take a look at the [`Bas
 - For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
 
 
-## Processing VCF Files ([vrs-python](https://github.com/ga4gh/vrs-python))###
+## Processing VCF Files ([vrs-python](https://github.com/ga4gh/vrs-python))
 
 vrs-python is a GA4GH GKS package centered around creating Variant Representation specification (VRS) IDs: consistent, globally unique identifiers for variation. Some of its functionality includes variant ID translation and VCF annotation. Used as a dependency in `vrs_bulk`, it can also be used as a standalone package.
 
