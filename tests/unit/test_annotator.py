@@ -162,7 +162,7 @@ def test_results(caching_translator):
 
         assert expected_allele["id"] == allele_id, (
             f"{allele_id} does not match for {gnomad_expr}: "
-            + f"\nexpected: {expected_allele["id"]}"
+            + f"\nexpected: {expected_allele['id']}"
         )
 
 
