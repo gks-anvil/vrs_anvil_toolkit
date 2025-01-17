@@ -246,16 +246,16 @@ def check_allele_counts(
 ) -> None:
     assert (
         caf["focusAllele"] == focus_allele
-    ), f"Incorrect CAF: expected focusAllele {focus_allele} but got {caf["focusAllele"]}"
+    ), f"Incorrect CAF: expected focusAllele {focus_allele} but got {caf['focusAllele']}"
 
     assert (
         caf["focusAlleleCount"] == focus_allele_count
-    ), f"Incorrect CAF: expected focusAlleleCount {focus_allele_count} but got {caf["focusAlleleCount"]}"
+    ), f"Incorrect CAF: expected focusAlleleCount {focus_allele_count} but got {caf['focusAlleleCount']}"
     assert (
         caf["locusAlleleCount"] == locus_allele_count
-    ), f"Incorrect CAF: expected focusAlleleCount {locus_allele_count} but got {caf["focusAlleleCount"]}"
+    ), f"Incorrect CAF: expected focusAlleleCount {locus_allele_count} but got {caf['focusAlleleCount']}"
 
     allele_frequency = focus_allele_count * 1.0 / locus_allele_count
     assert (
         caf["alleleFrequency"] == allele_frequency
-    ), f"Incorrect CAF: expected alleleFrequency {allele_frequency} but got {caf["alleleFrequency"]}"
+    ), f"Incorrect CAF: expected alleleFrequency {allele_frequency} but got {caf['alleleFrequency']}"
