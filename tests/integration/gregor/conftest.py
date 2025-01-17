@@ -6,6 +6,7 @@ from pysam import VariantFile
 
 from plugin_system.plugin_manager import PluginManager
 from plugin_system.plugins.gregor_plugin import GregorPlugin
+from plugin_system.utils import WORKSPACE_ENV_KEYS
 from vrs_anvil.evidence import PLUGIN_DIR
 
 
@@ -56,7 +57,10 @@ def vrs_vcf_index() -> str:
 
 
 @pytest.fixture(scope="module")
-def phenotype_table_path() -> str:
+def phenotype_table_path() -> str | None:
+    if all([os.getenv(key) is not None for key in WORKSPACE_ENV_KEYS]):
+        return None
+
     tests_dir = Path(os.path.dirname(__file__)).parent.parent
     path = os.path.join(tests_dir.absolute(), "fixtures/gregor/phenotypes.tsv")
 
