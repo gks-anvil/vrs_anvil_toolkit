@@ -174,7 +174,7 @@ There are two types of user stories for plugins: one will be implementing the pr
    1. For your `MyProjectPlugin` plugin, instantiate it with the `PluginManager` and any input parameters specified.
    2. Call `get_cohort_allele_frequency` with `plugin="MyProjectPlugin"` as a parameter.
 
-# GREGoR-specific Details
+## GREGoR-specific Details
 
 ### Work in Progress
 - For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
