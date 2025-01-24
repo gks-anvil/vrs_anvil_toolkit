@@ -142,8 +142,12 @@ def check_all_plugin_methods_defined(plugin, plugin_name, plugin_methods):
 
 
 def test_plugin_manager_loads_default_and_custom_plugin(
-    custom_plugin_class_name, plugin_methods, plugin_names
+    custom_plugin_dir, custom_plugin_class_name, plugin_methods, plugin_names
 ):
+    # NOTE: custom_plugin_dir creates a test file in the working directory instead of a temp dir
+    # this is because a temp dir changed at runtime cannot readily be found by the plugin manager's importlib calls
+    # could be minor tech debt for devs wishing to run automated tests in the cloud
+
     # add custom plugin to list of plugin names to load
     all_plugin_names = plugin_names + [custom_plugin_class_name]
 
