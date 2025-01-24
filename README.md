@@ -153,22 +153,20 @@ These three problems above map to three different methods necessary in implement
    1. This also makes use of a `pysam.VariantRecord` as input
    2. An `alt_index` is also passed in as an input, which is the index representing the allele of interest within the VCF row. The alt index matches the genotype according to [VCF specification](https://samtools.github.io/hts-specs/VCFv4.2.pdf). For instance, a sample with the 2nd alt might have a genotype containing a 2, ie `(2,1)`, `(2,0)`, `(2,2)`, etc.
 
-**Existing Plugins**
-- For the methods signatures and default implementations, take a look at the [`BasePlugin`](plugin_system/plugins/base_plugin.py) class
-- For a simple plugin implementation that inherits all methods from the `BasePlugin`, take a look at the [`SimplePlugin`](plugin_system/plugins/base_plugin.py) implementation.
-- For an example plugin, take a look at the [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py)
-
 To implement your own plugin....
 
 ### Getting Started
 
+There are two types of user stories for plugins: one will be implementing the project-specific plugin, while the other is using an already-built plugin. The former user will be called a plugin implementer, while the latter will be called a plugin user.
+
 **Plugin Implementer**
-1. Copy [`gregor_plugin.py`](plugin_system/plugins/gregor_plugin.py) to the same directory
-2. Rename the plugin class and name (eg `MyProjectPlugin` and `my_project_plugin.py`)
-3. Implement the three methods mentioned above, calling any default implementations or plugin [utilities](plugin_system/utils.py) as necessary.
-   1. [`BasePlugin`](plugin_system/base_plugin.py) is by default the parent class, so you can use the `BasePlugin`'s implementations by calling `super().<method_to_invoke>`
-   2. [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
-   3. See [`SimplePlugin`](plugin_system/plugins/base_plugin.py) for the simplest possible implementation of a plugin using only default methods inherited from `BasePlugin`.
+1. Read through the default implementations defined in the [`BasePlugin`](src/plugin_system/plugins/base_plugin.py).
+2. Copy [`simple_plugin.py`](src/plugin_system/plugins/gregor_plugin.py) to your working directory. This has to be in the **top-level directory** where you will do your CAF generation.
+3. Rename the plugin class and name (eg `MyProjectPlugin` and `my_project_plugin.py`). The file name must end in `_plugin.py` to be a valid module.
+4. Customize any of the methods described by the [`BasePlugin`](src/plugin_system/plugins/base_plugin.py) by implementing them in your own plugin class. For reference material...
+   1. [`BasePlugin`](src/plugin_system/plugins/base_plugin.py) is by default the parent class, so any methods that aren't defined in your plugin will inherit these methods. You can also define the `BasePlugin`'s implementations by calling `super().<method_to_invoke>` if you want to do additional work after using the default methods.
+   2. [`GregorPlugin`](src/plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
+   3. Plugin [utilities](src/plugin_system/utils.py) are va
 
 **Plugin User**
 1. Confirm that you have the variant of interest, [optional] phenotype of interest, VCF path of interest at your disposal, and name of implemented plugin class
