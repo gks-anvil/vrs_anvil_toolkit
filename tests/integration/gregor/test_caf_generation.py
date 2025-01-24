@@ -1,3 +1,4 @@
+import json
 import os
 import pytest
 
@@ -133,13 +134,15 @@ def test_correct_caf_given_chr3_variant(
     vrs_id_chr3, chr3_vcf_path, vrs_vcf_index, gregor_plugin
 ):
     """test caf generation with default parameters and no phenotype specified"""
+
+    # get and log caf
     caf = get_cohort_allele_frequency(
         vrs_id_chr3,
         chr3_vcf_path,
         vcf_index_path=vrs_vcf_index,
         plugin=gregor_plugin,
     )
-    print(caf)
+    print_caf(caf)
 
     # sanity checks
     assert (
@@ -178,8 +181,7 @@ def test_correct_caf_given_chr3_variant_and_pheno(
         plugin=gregor_plugin,
         phenotype=phenotype,
     )
-
-    print(caf)
+    print_caf(caf)
 
     # sanity checks
     assert (
@@ -247,7 +249,7 @@ def test_correct_allele_freq_for_multi_alts_chrY_variant_and_phenotype(
         plugin=gregor_plugin,
         phenotype=phenotype,
     )
-    print(caf)
+    print_caf(caf)
 
     expected_allele_freq = 0.1034
     actual_allele_freq = approx(caf.focusAlleleFrequency, abs=1e-4)
@@ -278,3 +280,8 @@ def check_caf_allele_data(caf, expected_fac, expected_lac):
         assert (
             actual == expected
         ), f"incorrect {name}, expected {expected_fac} got {caf.focusAlleleFrequency}"
+
+
+def print_caf(caf):
+    print("CAF:")
+    print(json.dumps(caf.model_dump(exclude_none=True), indent=2))

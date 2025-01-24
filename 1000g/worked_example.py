@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 
@@ -53,4 +54,4 @@ caf = get_cohort_allele_frequency(
 )
 
 print(f"CAF:")
-print(caf)
+print(json.dumps(caf.model_dump(exclude_none=True), indent=2))
