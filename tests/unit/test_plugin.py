@@ -109,9 +109,6 @@ class {custom_plugin_class_name}(BasePlugin):
     with open(custom_plugin_filename, "w") as file:
         file.write(plugin_class_definition)
 
-    # with open("bruh.txt", "w") as file:
-    #     file.write("bruh")
-
     # yield enables clean up even on failed pytest
     yield
 
@@ -217,8 +214,8 @@ def test_simple_plugin_can_generate_cafs_with_phenotype_index(
     all_phenotypes = [phenotype, "HP:0000002", "HP:0000001"]
     for pheno in all_phenotypes:
         assert (
-            pheno in caf["ancillaryResults"]["phenotypes"]
-        ), f'{pheno} not found in caf["ancillary_results"]["phenotypes"]: {caf["ancillary_results"]["phenotypes"]}'
+            pheno in caf.ancillaryResults["phenotypes"]
+        ), f'{pheno} not found in caf.ancillary_results["phenotypes"]: {caf.ancillary_results["phenotypes"]}'
 
     # check if allele counts are accurate
     check_allele_counts(caf, vrs_id, focus_allele_count, locus_allele_count)
@@ -238,9 +235,9 @@ def test_simple_plugin_can_generate_cafs_with_phenotype_index(
     print(f"CAF with phenotype: {caf}")
 
     # check if phenotypes are loaded
-    assert [phenotype] == caf["ancillaryResults"][
+    assert [phenotype] == caf.ancillaryResults[
         "phenotypes"
-    ], f'{phenotype} should be the only phenotype in caf["ancillary_results"]["phenotypes"], instead got: {caf["ancillary_results"]["phenotypes"]}'
+    ], f"{phenotype} should be the only phenotype in caf.ancillary_results.phenotypes, instead got: {caf.ancillary_results.phenotypes}"
 
     # check if allele counts are accurate
     check_allele_counts(
@@ -310,17 +307,17 @@ def check_allele_counts(
     caf: dict, focus_allele: str, focus_allele_count: int, locus_allele_count: int
 ) -> None:
     assert (
-        caf["focusAllele"] == focus_allele
-    ), f"Incorrect CAF: expected focusAllele {focus_allele} but got {caf['focusAllele']}"
+        caf.focusAllele.root == focus_allele
+    ), f"Incorrect CAF: expected focusAllele {focus_allele} but got {caf.focusAllele.root}"
 
     assert (
-        caf["focusAlleleCount"] == focus_allele_count
-    ), f"Incorrect CAF: expected focusAlleleCount {focus_allele_count} but got {caf['focusAlleleCount']}"
+        caf.focusAlleleCount == focus_allele_count
+    ), f"Incorrect CAF: expected focusAlleleCount {focus_allele_count} but got {caf.focusAlleleCount}"
     assert (
-        caf["locusAlleleCount"] == locus_allele_count
-    ), f"Incorrect CAF: expected focusAlleleCount {locus_allele_count} but got {caf['focusAlleleCount']}"
+        caf.locusAlleleCount == locus_allele_count
+    ), f"Incorrect CAF: expected focusAlleleCount {locus_allele_count} but got {caf.focusAlleleCount}"
 
     allele_frequency = focus_allele_count * 1.0 / locus_allele_count
     assert (
-        caf["alleleFrequency"] == allele_frequency
-    ), f"Incorrect CAF: expected alleleFrequency {allele_frequency} but got {caf['alleleFrequency']}"
+        caf.focusAlleleFrequency == allele_frequency
+    ), f"Incorrect CAF: expected alleleFrequency {allele_frequency} but got {caf.focusAlleleFrequency}"
