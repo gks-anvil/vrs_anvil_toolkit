@@ -258,8 +258,9 @@ def test_plugin_worked_example(
     Args:
         vcf_path (str): path to the VCF of interest
         vcf_index_path (str): path to unwritten index
-        phenotype_index (dict[str, list[str]]): _description_
-        phenotype (str): _description_
+        phenotype_index (dict[str, list[str]]): mapping from samples to phenotypes
+            Index example: {"sample_A": ["HP:0001263", "HP:0000002"], "sample_B": ["HP:0001263"]}
+        phenotype (str): phenotype used to specify a subcohort
     """
 
     # get VRS ID from variant of interest
