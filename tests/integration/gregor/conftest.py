@@ -7,7 +7,6 @@ from pysam import VariantFile
 from plugin_system.plugin_manager import PluginManager
 from plugin_system.plugins.gregor_plugin import GregorPlugin
 from plugin_system.utils import WORKSPACE_ENV_KEYS
-from vrs_anvil.evidence import PLUGIN_DIR
 
 
 @pytest.fixture
@@ -78,8 +77,7 @@ def phenotype_table_path() -> str | None:
 @pytest.fixture(scope="module")
 def gregor_plugin(phenotype_table_path) -> GregorPlugin:
     # load plugin of choice
-    plugin_manager = PluginManager(PLUGIN_DIR)
-    plugin = plugin_manager.load_plugin("GregorPlugin")
+    plugin = PluginManager().load_plugin("GregorPlugin")
 
     # instantiate plugin
     return plugin(phenotype_table_path=phenotype_table_path)
