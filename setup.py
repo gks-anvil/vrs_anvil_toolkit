@@ -90,7 +90,9 @@ setup(
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
 
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
+    packages=find_packages(where="src"),  # Required
+
+    package_dir={"": "src"},
 
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this

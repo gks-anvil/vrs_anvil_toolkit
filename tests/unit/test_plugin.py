@@ -5,7 +5,12 @@ import subprocess
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.dataproxy import create_dataproxy
 from plugin_system.plugin_manager import PluginManager
-from vrs_anvil.evidence import PLUGIN_DIR, get_cohort_allele_frequency
+from vrs_anvil.evidence import get_cohort_allele_frequency
+
+
+############
+# FIXTURES #
+############
 
 
 @pytest.fixture()
@@ -81,24 +86,80 @@ def vrs_id():
     return "ga4gh:VA.1WRXw4TC5DYsjC2QLyKux9C0xETLN3Yt"
 
 
+@pytest.fixture()
+def custom_plugin_class_name():
+    return "CustomPlugin"
+
+
+@pytest.fixture()
+def custom_plugin_filename():
+    return "custom_plugin.py"
+
+
+@pytest.fixture()
+def custom_plugin_dir(custom_plugin_filename, custom_plugin_class_name):
+    # write a minimal custom plugin to file
+    plugin_class_definition = f"""
+from plugin_system.plugins.base_plugin import BasePlugin
+
+class {custom_plugin_class_name}(BasePlugin):
+    'stub docstring for {custom_plugin_class_name}'
+"""
+
+    with open(custom_plugin_filename, "w") as file:
+        file.write(plugin_class_definition)
+
+    # with open("bruh.txt", "w") as file:
+    #     file.write("bruh")
+
+    # yield enables clean up even on failed pytest
+    yield
+
+    # clean up plugin file
+    if os.path.exists(custom_plugin_filename):
+        os.remove(custom_plugin_filename)
+
+
+#########
+# TESTS #
+#########
+
+
 def test_plugin_manager_can_load_plugins(plugin_methods, plugin_names):
+
+    # load each plugin and ensure it has the proper methods
     for plugin_name in plugin_names:
-        plugin_manager = PluginManager(PLUGIN_DIR)
-        plugin = plugin_manager.load_plugin(plugin_name)
+        print("\n", plugin_name)
+        plugin = PluginManager().load_plugin(plugin_name)
 
         print("plugin:", plugin)
+        check_all_plugin_methods_defined(plugin, plugin_name, plugin_methods)
 
-        for method in plugin_methods:
-            assert hasattr(
-                plugin, method
-            ), f"{plugin_name} does not have method '{method}'"
+
+def check_all_plugin_methods_defined(plugin, plugin_name, plugin_methods):
+    for method in plugin_methods:
+        assert hasattr(plugin, method), f"{plugin_name} does not have method '{method}'"
+
+
+def test_plugin_manager_loads_default_and_custom_plugin(
+    custom_plugin_class_name, plugin_methods, plugin_names
+):
+    # add custom plugin to list of plugin names to load
+    all_plugin_names = plugin_names + [custom_plugin_class_name]
+
+    # load all plugins
+    for plugin_name in all_plugin_names:
+        print(f"\n{plugin_name}")
+        plugin = PluginManager().load_plugin(plugin_name)
+
+        check_all_plugin_methods_defined(plugin, plugin_name, plugin_methods)
 
 
 def test_simple_plugin_can_generate_caf_no_phenotype_index(
     vrs_id, vcf_path, existing_vcf_index_path, focus_allele_count, locus_allele_count
 ):
     # load plugin class
-    plugin_manager = PluginManager(PLUGIN_DIR)
+    plugin_manager = PluginManager()
     plugin = plugin_manager.load_plugin(
         "SimplePlugin"
     )  # SimplePlugin inherits all of base plugin's methods
@@ -129,7 +190,7 @@ def test_simple_plugin_can_generate_cafs_with_phenotype_index(
     phenotype_index,
 ):
     # load plugin class
-    plugin_manager = PluginManager(PLUGIN_DIR)
+    plugin_manager = PluginManager()
     plugin = plugin_manager.load_plugin(
         "SimplePlugin"
     )  # SimplePlugin inherits all of base plugin's methods
@@ -218,7 +279,7 @@ def test_plugin_worked_example(
         print("Error message:", e.stderr)
 
     # get SimplePlugin class
-    plugin_manager = PluginManager(PLUGIN_DIR)
+    plugin_manager = PluginManager()
     plugin = plugin_manager.load_plugin("SimplePlugin")
 
     # instantiate simple plugin with phenotype index

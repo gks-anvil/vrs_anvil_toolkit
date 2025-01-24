@@ -77,4 +77,4 @@ def thousand_genome_vcf() -> pathlib.Path:
 @pytest.fixture
 def python_source_directories() -> list[str]:
     """Directories to scan with flake8."""
-    return ["vrs_anvil", "tests"]
+    return ["src", "tests"]

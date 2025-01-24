@@ -7,7 +7,7 @@ from pysam import VariantFile, VariantRecord
 from plugin_system.plugins.base_plugin import BasePlugin
 
 # location to register plugins classes
-PLUGIN_DIR = "plugin_system.plugins"
+PLUGIN_MODULE_PATH = "plugin_system.plugins"
 
 
 def get_cohort_allele_frequency(
@@ -155,7 +155,9 @@ def fetch_by_vrs_ids(
         trunc_vrs_id = vrs_id[9:] if vrs_id.startswith("ga4gh:VA.") else vrs_id
         trunc_vrs_ids.append(trunc_vrs_id)
 
-    assert db_location.exists(), f"Index at {db_location} does not exist"
+    if not db_location.exists():
+        raise OSError(f"Index at {db_location} does not exist")
+
     conn = sqlite3.connect(db_location)
 
     # have to manually make placeholders for python sqlite API --
@@ -166,6 +168,10 @@ def fetch_by_vrs_ids(
         trunc_vrs_ids,
     )
     data = result.fetchall()
+
+    if len(data) == 0:
+        raise Exception(f"No matching rows in the VCF index for the VRS IDs specified \n   - VRS IDs: {vrs_ids} \n   - Index path: {db_location}")
+
     conn.close()
     return data
 
