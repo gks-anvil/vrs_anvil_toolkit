@@ -210,6 +210,8 @@ def get_vcf_row(
             for record in vcf.fetch(f"chr{chr}", pos - 1, pos):
                 if variant_id in record.info["VRS_Allele_IDs"]:
                     return record
+
+        raise KeyError(f"no VCF row found matching variant ID {variant_id}")
     else:
         # otherwise, iterate through VCF
         for record in enumerate(vcf.fetch()):
@@ -218,5 +220,3 @@ def get_vcf_row(
             )
             if variant_id in record.info["VRS_Allele_IDs"]:
                 return record
-
-    raise KeyError(f"no VCF row found matching variant ID {variant_id}")
