@@ -109,11 +109,9 @@ Given a variant and an optional phenotype of interest, get aggregated allele fre
 ### General Prerequisites
 - Variant of interest
 - Valid VRS-annotated joint VCF
-  - Assumes chr field is prepended with chr (eg `chr1`)
   - genotyping laid out per-sample
 - Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))
-  - This maps VCF coordinates to VRS IDs
-  - Enables efficient retrieval of VCF row by VRS ID
+  - this enables efficient retrieval of VCF row by VRS ID
 - [Optional] Phenotype of interest to specify subcohort
 - [Optional] Plugins for project-specific transformations (see [here](README.md#plugins-for-unique-data-inputs) for more info)
 
