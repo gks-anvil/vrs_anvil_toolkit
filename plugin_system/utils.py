@@ -16,7 +16,7 @@ def save_dict(d, path):
     # save to disk if specified
     if path:
         if os.path.exists(path):
-            raise Exception(
+            raise FileExistsError(
                 f"index already exists at path: {path}. Please delete it before continuing"
             )
         else:
@@ -30,14 +30,14 @@ def load_dict(path):
             d = json.load(file)
             return d
     else:
-        raise OSError(f"path to phenotype index does not exist: {path}")
+        raise FileNotFoundError(f"path to phenotype index does not exist: {path}")
 
 
 def terra_data_table_to_dataframe(table_name) -> pd.DataFrame:
     # if unspecified, ensure valid Terra environment
     for env_key in WORKSPACE_ENV_KEYS:
         if env_key not in os.environ:
-            raise Exception(
+            raise OSError(
                 f"ERROR: No {env_key} key found in environmental variables in the Terra workspace. If you are working in a Terra workspace, please ensure both a WORKSPACE_NAMESPACE and a WORKSPACE_NAME are specified."
             )
 

@@ -16,7 +16,7 @@ def get_cohort_allele_frequency(
     vcf_index_path: str | None = None,
     participant_list: list[str] | None = None,
     phenotype: str | None = None,
-    plugin: BasePlugin = BasePlugin(),
+    plugin: BasePlugin | None = None,
 ) -> dict:
     """Create a cohort allele frequency for either genotypes or phenotypes
 
@@ -27,6 +27,7 @@ def get_cohort_allele_frequency(
         phenotype_table (str, optional): where to pull phenotype information from. Defaults to None.
         participant_list (list[str], optional): Subset of participants to use. Defaults to None.
         phenotype (str, optional): Specific phenotype to subset on. Defaults to None.
+        plugin (BasePlugin, optional): Plugin object to use for custom processing. Defaults to None, loading in the BasePlugin.
 
     Returns:
         dict: Cohort Allele Frequency object
@@ -35,6 +36,9 @@ def get_cohort_allele_frequency(
     assert (
         "ga4gh:VA" in variant_id
     ), "variant ID type not yet supported, use VRS ID instead"
+
+    if plugin is None:
+        plugin = BasePlugin()
 
     # get index of variant to patient
     # in this case, the VCF row of the variant_id
@@ -183,10 +187,11 @@ def get_vcf_row(
         VariantRecord: A Pysam VariantRecord (VCF row)
     """
 
-    assert "VRS_Allele_IDs" in vcf.header.info, (
-        "no VRS_Allele_IDs key in INFO found, "
-        "please ensure that this is an VRS annotated VCF"
-    )
+    if "VRS_Allele_IDs" not in vcf.header.info:
+        raise KeyError(
+            "no VRS_Allele_IDs key in INFO found, "
+            "please ensure that this is an VRS annotated VCF"
+        )
 
     # try to populate from Bash env variable
     if not index_path:
@@ -214,4 +219,4 @@ def get_vcf_row(
             if variant_id in record.info["VRS_Allele_IDs"]:
                 return record
 
-    raise Exception(f"no VCF row found matching variant ID {variant_id}")
+    raise KeyError(f"no VCF row found matching variant ID {variant_id}")
