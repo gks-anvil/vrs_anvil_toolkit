@@ -104,7 +104,7 @@ The command line utility supports Google Cloud URIs and running commands in the 
 ## Cohort Allele Frequency Generation
 
 ### Description
-Given a variant and an optional phenotype of interest, get aggregated allele frequency info for a cohort of interest as a cohort allele frequency object (CAF).
+Given a variant and an optional phenotype of interest, get aggregated allele frequency info for a cohort of interest as a cohort allele frequency object ([CAF](https://va-ga4gh.readthedocs.io/en/1.0.0-ballot.2024-11/base-profiles/study-result-profiles.html#cohort-allele-frequency-study-result)).
 
 ### General Prerequisites
 - Variant of interest
@@ -142,7 +142,7 @@ A plugin architecture allows users to customize the aggregation of cohort data s
 2. a user is interested in a subset of the cohort based on particular filters
    1. Example: samples must have phenotype A and a minimum read depth to be included in the subcohort
 3. each sample's genotype must be calculated uniquely depending on particular traits
-   1. Example: sex is not represented within the VCF, so a user needs to integrate sample-level phenotype data to get accurate counts for chrX variants
+1. Example: sex is not represented within the VCF, so a user needs to integrate sample-level phenotype data to get accurate counts for chrX variants
 
 These three problems above map to three different methods necessary in implementing a `Plugin`:
 1. `__init__`: Given any set of parameters, create a phenotype index that maps each sample to its list of phenotypes.
@@ -166,7 +166,7 @@ There are two types of user stories for plugins: one will be implementing the pr
 4. Customize any of the methods described by the [`BasePlugin`](src/plugin_system/plugins/base_plugin.py) by implementing them in your own plugin class. For reference material...
    1. [`BasePlugin`](src/plugin_system/plugins/base_plugin.py) is by default the parent class, so any methods that aren't defined in your plugin will inherit these methods. You can also define the `BasePlugin`'s implementations by calling `super().<method_to_invoke>` if you want to do additional work after using the default methods.
    2. [`GregorPlugin`](src/plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
-   3. Plugin [utilities](src/plugin_system/utils.py) are va
+   3. Plugin [utilities](src/plugin_system/utils.py) are a set of data transformation util methods that might be useful. For example, if your phenotypical data lives in a Terra data table, you could use `terra_data_table_to_dataframe` to rapidly retrieve the columns most relevant in creating a phenotype index.
 
 **Plugin User**
 1. Confirm that you have the variant of interest, [optional] phenotype of interest, VCF path of interest at your disposal, and name of implemented plugin class
