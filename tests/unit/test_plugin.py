@@ -62,7 +62,7 @@ def vcf_index_path():
 
     if os.path.exists(path):
         raise Exception(
-            f"VCF index path ({path}) should not exist, please delete ebfore continuing"
+            f"VCF index path ({path}) should not exist, please delete before continuing"
         )
 
     yield path

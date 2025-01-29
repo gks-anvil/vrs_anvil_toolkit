@@ -62,7 +62,7 @@ def phenotype_table_path() -> str | None:
         return None
 
     tests_dir = Path(os.path.dirname(__file__)).parent.parent
-    path = os.path.join(tests_dir.absolute(), "fixtures/gregor/phenotypes.tsv")
+    path = os.path.join(tests_dir.absolute(), "fixtures/gregor/phenotype.tsv")
 
     print("phenotype_table_path:", path)
     if os.path.exists(path):

@@ -14,7 +14,7 @@ export GCS_OAUTH_TOKEN=$(gcloud auth application-default print-access-token)
       2. Then, the tests will automatically look for the table titled "phenotype" and load it.
    2. If not in Terra,
       1. Download the phenotype table from the [GREGoR U08 Workspace](https://app.terra.bio/#workspaces/gregor-dcc/GREGOR_COMBINED_CONSORTIUM_U08/data) as a tsv from AnVIL platform
-      2. Ensure the file name is `phenotype.tsv` or `phenotype.csv`
+      2. Ensure the file name is `phenotype.tsv`
       3. Locate the file by either
          1. Moving that file to `tests/fixtures/gregor` or...
          2. `export PHENOTYPE_TABLE=<ABSOLUTE_PATH_TO_PHENO_TABLE>`
