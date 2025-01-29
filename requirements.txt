@@ -16,3 +16,6 @@ setuptools
 firecloud
 pandas
 vrsix==0.1.1
+
+# TODO: use actual version with merge of PR
+ga4gh.va_spec @ git+https://github.com/ga4gh/va-spec-python.git@issue-10#egg=ga4gh.va_spec

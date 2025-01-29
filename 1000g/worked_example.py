@@ -6,10 +6,9 @@ from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.dataproxy import create_dataproxy
 from plugin_system.plugin_manager import PluginManager
 from vrs_anvil.evidence import get_cohort_allele_frequency
-from pysam import VariantFile
 
 
-# run this in  1000g directory
+# run this in 1000g directory
 assert os.getcwd().endswith(
     "1000g"
 ), "to ensure the plugin can be located, please run this in the 1000g directory"
@@ -23,7 +22,7 @@ vcf_index_path = "1000g_chr1_index.db"
 
 # set phenotype-specific inputs
 phenotype = "USA"  # to create subcohorts
-phenotype_table = "/Users/wongq/Downloads/population_descriptor.tsv"  # downloaded from https://anvil.terra.bio/#workspaces/anvil-datastorage/AnVIL_1000G_PRIMED-data-model/data
+phenotype_table = "population_descriptor.tsv"  # downloaded from https://anvil.terra.bio/#workspaces/anvil-datastorage/AnVIL_1000G_PRIMED-data-model/data
 
 # create vcf index from vcf at the specified path using vrsix
 command = ["vrsix", "load", f"--db-location={vcf_index_path}", vcf_path]
