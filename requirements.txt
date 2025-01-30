@@ -15,4 +15,4 @@ setuptools
 # for cohort allele frequency generation
 firecloud
 pandas
-vrsix
+vrsix==0.0.1
