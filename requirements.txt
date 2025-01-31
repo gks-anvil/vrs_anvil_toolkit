@@ -1,4 +1,4 @@
-ga4gh.vrs[extras]==2.0.0a10
+ga4gh.vrs[extras]==2.0.0a13
 diskcache
 biocommons.seqrepo
 glom
@@ -15,4 +15,7 @@ setuptools
 # for cohort allele frequency generation
 firecloud
 pandas
-vrsix==0.0.1
+vrsix==0.1.1
+
+# TODO: use actual version with merge of PR
+ga4gh.va_spec @ git+https://github.com/ga4gh/va-spec-python.git@2ea827ee9179262094e9f4cdba0876a6a389a54c#egg=ga4gh.va_spec

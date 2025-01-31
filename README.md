@@ -104,16 +104,14 @@ The command line utility supports Google Cloud URIs and running commands in the 
 ## Cohort Allele Frequency Generation
 
 ### Description
-Given a variant and an optional phenotype of interest, get aggregated allele frequency info for a cohort of interest as a cohort allele frequency object (CAF).
+Given a variant and an optional phenotype of interest, get aggregated allele frequency info for a cohort of interest as a cohort allele frequency object ([CAF](https://va-ga4gh.readthedocs.io/en/1.0.0-ballot.2024-11/base-profiles/study-result-profiles.html#cohort-allele-frequency-study-result)).
 
 ### General Prerequisites
 - Variant of interest
 - Valid VRS-annotated joint VCF
-  - Assumes chr field is prepended with chr (eg `chr1`)
   - genotyping laid out per-sample
 - Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))
-  - This maps VCF coordinates to VRS IDs
-  - Enables efficient retrieval of VCF row by VRS ID
+  - this enables efficient retrieval of VCF row by VRS ID
 - [Optional] Phenotype of interest to specify subcohort
 - [Optional] Plugins for project-specific transformations (see [here](README.md#plugins-for-unique-data-inputs) for more info)
 
@@ -153,33 +151,26 @@ These three problems above map to three different methods necessary in implement
    1. This also makes use of a `pysam.VariantRecord` as input
    2. An `alt_index` is also passed in as an input, which is the index representing the allele of interest within the VCF row. The alt index matches the genotype according to [VCF specification](https://samtools.github.io/hts-specs/VCFv4.2.pdf). For instance, a sample with the 2nd alt might have a genotype containing a 2, ie `(2,1)`, `(2,0)`, `(2,2)`, etc.
 
-**Existing Plugins**
-- For the methods signatures and default implementations, take a look at the [`BasePlugin`](plugin_system/plugins/base_plugin.py) class
-- For a simple plugin implementation that inherits all methods from the `BasePlugin`, take a look at the [`SimplePlugin`](plugin_system/plugins/base_plugin.py) implementation.
-- For an example plugin, take a look at the [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py)
-
 To implement your own plugin....
 
 ### Getting Started
 
-**Plugin Implementer**
-1. Copy [`gregor_plugin.py`](plugin_system/plugins/gregor_plugin.py) to the same directory
-2. Rename the plugin class and name (eg `MyProjectPlugin` and `my_project_plugin.py`)
-3. Implement the three methods mentioned above, calling any default implementations or plugin [utilities](plugin_system/utils.py) as necessary.
-   1. [`BasePlugin`](plugin_system/base_plugin.py) is by default the parent class, so you can use the `BasePlugin`'s implementations by calling `super().<method_to_invoke>`
-   2. [`GregorPlugin`](plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
-   3. See [`SimplePlugin`](plugin_system/plugins/base_plugin.py) for the simplest possible implementation of a plugin using only default methods inherited from `BasePlugin`.
+There are two types of user stories for plugins: one will be implementing the project-specific plugin, while the other is using an already-built plugin. The former user will be called a plugin author, while the latter will be called a plugin user.
+
+**Plugin Author**
+1. Read through the default implementations defined in the [`BasePlugin`](src/plugin_system/plugins/base_plugin.py).
+2. Copy [`simple_plugin.py`](src/plugin_system/plugins/gregor_plugin.py) to your working directory. This has to be in the **top-level directory** where you will do your CAF generation.
+3. Rename the plugin class and name (eg `MyProjectPlugin` and `my_project_plugin.py`). The file name must end in `_plugin.py` to be a valid module.
+4. Customize any of the methods described by the [`BasePlugin`](src/plugin_system/plugins/base_plugin.py) by implementing them in your own plugin class. For reference material...
+   1. [`BasePlugin`](src/plugin_system/plugins/base_plugin.py) is by default the parent class, so any methods that aren't defined in your plugin will inherit these methods. You can also define the `BasePlugin`'s implementations by calling `super().<method_to_invoke>` if you want to do additional work after using the default methods.
+   2. [`GregorPlugin`](src/plugin_system/plugins/gregor_plugin.py) is a worked example of specific real-world implementation, refer to that for alternative ways to customize allele frequency generation.
+   3. Plugin [utilities](src/plugin_system/utils.py) are a set of data transformation util methods that might be useful. For example, if your phenotypical data lives in a Terra data table, you could use `terra_data_table_to_dataframe` to rapidly retrieve the columns most relevant in creating a phenotype index.
 
 **Plugin User**
 1. Confirm that you have the variant of interest, [optional] phenotype of interest, VCF path of interest at your disposal, and name of implemented plugin class
-2. See the `test_plugin_worked_example` function in [test_plugin.py](tests/unit/test_plugin.py) for a worked example on how to use plugin. The two main components of using the plugin are...
+2. See the `test_plugin_worked_example` function in [test_plugin.py](tests/unit/test_plugin.py) for a worked example on how to use plugin. Generally, the two main components related to using the plugin are...
    1. For your `MyProjectPlugin` plugin, instantiate it with the `PluginManager` and any input parameters specified.
-   2. Call `get_cohort_allele_frequency` with `plugin="MyProjectPlugin"` as a parameter.
-
-# GREGoR-specific Details
-
-### Work in Progress
-- For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
+   2. Call `get_cohort_allele_frequency` passing in the instantiated `MyProjectPlugin` object with the "plugin" parameter.
 
 
 ## Processing VCF Files ([vrs-python](https://github.com/ga4gh/vrs-python))
@@ -196,6 +187,11 @@ python3 -m ga4gh.vrs.extras.vcf_annotation --vcf_in tests/fixtures/1kGP.chr1.100
 The above is an example using an example vcf. Replace the `--vcf_out` and `vrs_pickle_out` here with your desired output file path, where the output vcf can be BCF (`vcf.gz`) or VCF (`vcf`)
 
 Also, see the [VRS Annotator](https://dockstore.org/workflows/github.com/gks-anvil/vrs-annotator/VRSAnnotator:main?tab=info) workflow on Dockstore for a way to do this on Terra.
+
+## GREGoR-specific Details
+
+### Work in Progress
+- For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
 
 ## Contributing
 
