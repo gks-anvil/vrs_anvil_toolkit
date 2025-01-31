@@ -28,7 +28,9 @@ class PluginManager:
         )
 
         # look for plugin by name first in default directory then in top-level directory
-        for i, iter in enumerate([pkgutil.iter_modules([default_plugin_dir]), pkgutil.iter_modules()]):
+        for i, iter in enumerate(
+            [pkgutil.iter_modules([default_plugin_dir]), pkgutil.iter_modules()]
+        ):
             for _, name, _ in iter:
                 # only look for specific file names
                 if not name.endswith("_plugin"):
@@ -55,4 +57,6 @@ class PluginManager:
                     raise
 
         # if no plugin found, raise error
-        raise OSError(f"Plugin {plugin_name} not found. Make sure the path is stored in the top-level")
+        raise OSError(
+            f"Plugin {plugin_name} not found. Make sure the path is stored in the top-level"
+        )
