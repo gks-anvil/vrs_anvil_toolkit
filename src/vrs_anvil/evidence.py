@@ -69,10 +69,6 @@ def get_cohort_allele_frequency(
     num_homozygotes = 0
     num_hemizygotes = 0
 
-    # # FIXME: REMOVE #
-    # within_hemizygous_region = record.chrom in ["chrM", "chrY"]
-    # within_x_chr = record.chrom == "chrX"
-
     # aggregate data for CAF so long as...
     for sample_id, genotype in record.samples.items():
         # 1. sample genotype call exist
