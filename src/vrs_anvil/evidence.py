@@ -3,6 +3,8 @@ from pathlib import Path
 import sqlite3
 
 from datetime import datetime
+from ga4gh.va_spec.base.caf_study_result import CohortAlleleFrequencyStudyResult as CAF
+from ga4gh.va_spec.base.core import DataSet, StudyGroup
 from pysam import VariantFile, VariantRecord
 from plugin_system.plugins.base_plugin import BasePlugin
 
@@ -17,7 +19,7 @@ def get_cohort_allele_frequency(
     participant_list: list[str] | None = None,
     phenotype: str | None = None,
     plugin: BasePlugin | None = None,
-) -> dict:
+) -> CAF:
     """Create a cohort allele frequency for either genotypes or phenotypes
 
     Args:
@@ -33,10 +35,12 @@ def get_cohort_allele_frequency(
         dict: Cohort Allele Frequency object
     """
 
+    # check variant_id is VRS ID
     assert (
         "ga4gh:VA" in variant_id
     ), "variant ID type not yet supported, use VRS ID instead"
 
+    # use default plugin if none specified
     if plugin is None:
         plugin = BasePlugin()
 
@@ -109,39 +113,34 @@ def get_cohort_allele_frequency(
             if phenotype_index is not None and sample_id in phenotype_index:
                 cohort_phenotypes.update(phenotype_index[sample_id])
 
-    # populate final caf dict
+    # format caf fields before populating caf object
     allele_frequency = (
         focus_allele_count * 1.0 / locus_allele_count if locus_allele_count != 0 else 0
     )
 
-    label = vcf_path
-    if phenotype:
-        label += f" conditioned on {phenotype}"
+    if phenotype is None:
+        cohort = StudyGroup(id="ALL", label="Overall")
+    else:
+        cohort = StudyGroup(id=phenotype, label=phenotype)
 
-    caf_dict = {
-        "type": "CohortAlleleFrequency",
-        "label": f"Overall Cohort Allele Frequency for {variant_id}",
-        "derivedFrom": {
-            "id": vcf_path,
-            "type": "DataSet",
-            "label": label,
-            "version": f"Created {datetime.now()}",
-        },
-        "focusAllele": variant_id,
-        "focusAlleleCount": focus_allele_count,
-        "locusAlleleCount": locus_allele_count,
-        "alleleFrequency": allele_frequency,
-        "cohort": {
-            "id": vcf_path,
-        },
-        "ancillaryResults": {
-            "homozygotes": num_homozygotes,
-            "hemizygotes": num_hemizygotes,
-            "phenotypes": list(cohort_phenotypes),
-        },
+    ancillary_results = {
+        "homozygotes": num_homozygotes,
+        "hemizygotes": num_hemizygotes,
+        "phenotypes": list(cohort_phenotypes),
     }
 
-    return caf_dict
+    # populate final caf object according to va-spec-python
+    caf = CAF(
+        sourceDataSet=DataSet(id=vcf_path, description=f"Created {datetime.now()}"),
+        focusAllele=variant_id,
+        focusAlleleCount=focus_allele_count,
+        focusAlleleFrequency=allele_frequency,
+        locusAlleleCount=locus_allele_count,
+        cohort=cohort,
+        ancillaryResults=ancillary_results,
+    )
+
+    return caf
 
 
 def fetch_by_vrs_ids(
@@ -174,7 +173,9 @@ def fetch_by_vrs_ids(
     data = result.fetchall()
 
     if len(data) == 0:
-        raise Exception(f"No matching rows in the VCF index for the VRS IDs specified \n   - VRS IDs: {vrs_ids} \n   - Index path: {db_location}")
+        raise Exception(
+            f"No matching rows in the VCF index for the VRS IDs specified \n   - VRS IDs: {vrs_ids} \n   - Index path: {db_location}"
+        )
 
     conn.close()
     return data

@@ -2,6 +2,7 @@ import os
 import pytest
 import subprocess
 
+from ga4gh.va_spec.base.caf_study_result import CohortAlleleFrequencyStudyResult as CAF
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.dataproxy import create_dataproxy
 from plugin_system.plugin_manager import PluginManager
@@ -178,6 +179,8 @@ def test_simple_plugin_can_generate_caf_no_phenotype_index(
 
     print(f"CAF no phenotype: {caf}")
 
+    # ensure caf is valid and correct
+    CAF.model_validate(caf)
     check_allele_counts(caf, vrs_id, focus_allele_count, locus_allele_count)
 
 
