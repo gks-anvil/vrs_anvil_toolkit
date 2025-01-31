@@ -140,7 +140,7 @@ A plugin architecture allows users to customize the aggregation of cohort data s
 2. a user is interested in a subset of the cohort based on particular filters
    1. Example: samples must have phenotype A and a minimum read depth to be included in the subcohort
 3. each sample's genotype must be calculated uniquely depending on particular traits
-1. Example: sex is not represented within the VCF, so a user needs to integrate sample-level phenotype data to get accurate counts for chrX variants
+   1. Example: sex is not represented within the VCF, so a user needs to integrate sample-level phenotype data to get accurate counts for chrX variants
 
 These three problems above map to three different methods necessary in implementing a `Plugin`:
 1. `__init__`: Given any set of parameters, create a phenotype index that maps each sample to its list of phenotypes.
@@ -155,9 +155,9 @@ To implement your own plugin....
 
 ### Getting Started
 
-There are two types of user stories for plugins: one will be implementing the project-specific plugin, while the other is using an already-built plugin. The former user will be called a plugin implementer, while the latter will be called a plugin user.
+There are two types of user stories for plugins: one will be implementing the project-specific plugin, while the other is using an already-built plugin. The former user will be called a plugin author, while the latter will be called a plugin user.
 
-**Plugin Implementer**
+**Plugin Author**
 1. Read through the default implementations defined in the [`BasePlugin`](src/plugin_system/plugins/base_plugin.py).
 2. Copy [`simple_plugin.py`](src/plugin_system/plugins/gregor_plugin.py) to your working directory. This has to be in the **top-level directory** where you will do your CAF generation.
 3. Rename the plugin class and name (eg `MyProjectPlugin` and `my_project_plugin.py`). The file name must end in `_plugin.py` to be a valid module.
@@ -168,14 +168,9 @@ There are two types of user stories for plugins: one will be implementing the pr
 
 **Plugin User**
 1. Confirm that you have the variant of interest, [optional] phenotype of interest, VCF path of interest at your disposal, and name of implemented plugin class
-2. See the `test_plugin_worked_example` function in [test_plugin.py](tests/unit/test_plugin.py) for a worked example on how to use plugin. The two main components of using the plugin are...
+2. See the `test_plugin_worked_example` function in [test_plugin.py](tests/unit/test_plugin.py) for a worked example on how to use plugin. Generally, the two main components related to using the plugin are...
    1. For your `MyProjectPlugin` plugin, instantiate it with the `PluginManager` and any input parameters specified.
-   2. Call `get_cohort_allele_frequency` with `plugin="MyProjectPlugin"` as a parameter.
-
-## GREGoR-specific Details
-
-### Work in Progress
-- For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
+   2. Call `get_cohort_allele_frequency` passing in the instantiated `MyProjectPlugin` object with the "plugin" parameter.
 
 
 ## Processing VCF Files ([vrs-python](https://github.com/ga4gh/vrs-python))
@@ -192,6 +187,11 @@ python3 -m ga4gh.vrs.extras.vcf_annotation --vcf_in tests/fixtures/1kGP.chr1.100
 The above is an example using an example vcf. Replace the `--vcf_out` and `vrs_pickle_out` here with your desired output file path, where the output vcf can be BCF (`vcf.gz`) or VCF (`vcf`)
 
 Also, see the [VRS Annotator](https://dockstore.org/workflows/github.com/gks-anvil/vrs-annotator/VRSAnnotator:main?tab=info) workflow on Dockstore for a way to do this on Terra.
+
+## GREGoR-specific Details
+
+### Work in Progress
+- For chromosomes with ploidy of 1 (mitochondrial calling or sex chromosomes), focus allele counts (AC) and locus allele counts (AN) can have a maximum value of 1. Focus allele counts are 1 when the genotype has at least a single allele match (0/1, 1/1, or 1) otherwise it is none.
 
 ## Contributing
 
