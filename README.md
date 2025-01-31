@@ -1,5 +1,4 @@
-<img width="685" alt="image" src="https://github.com/gks-anvil/vrs_anvil_toolkit/assets/47808/909db052-972c-4508-a2f4-8a389de03320">
-
+<img width="100" alt="image" src="https://github.com/user-attachments/assets/b3d5bb78-2794-4182-a7b9-11ab6969f666">
 
 # VRS AnVIL Toolkit
 
