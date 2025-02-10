@@ -53,7 +53,6 @@ def cli(ctx, verbose: bool, manifest: str, max_errors: int, suffix: str):
 
             # only create a persistent log for annotate subcommand
             if ctx.invoked_subcommand == "annotate":
-
                 # Create a rotating file handler with a max size of 10MB and keep 3 backup files
                 log_path = (
                     pathlib.Path(manifest.state_directory)

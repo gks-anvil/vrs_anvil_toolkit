@@ -182,8 +182,8 @@ def test_cache(caching_translator):
         tlr.translate_from(fmt="gnomad", var=inputs["gnomad"])
     cache_time = time.time() - start_time
 
-    assert cache_time < (
-        noncached_time / 4
+    assert (
+        cache_time < (noncached_time / 4)
     ), f"Cache should make things significantly faster first {noncached_time} second {cache_time}."
 
 

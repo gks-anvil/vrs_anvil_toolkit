@@ -124,7 +124,6 @@ class {custom_plugin_class_name}(BasePlugin):
 
 
 def test_plugin_manager_can_load_plugins(plugin_methods, plugin_names):
-
     # load each plugin and ensure it has the proper methods
     for plugin_name in plugin_names:
         print("\n", plugin_name)
@@ -238,9 +237,9 @@ def test_simple_plugin_can_generate_cafs_with_phenotype_index(
     print(f"CAF with phenotype: {caf}")
 
     # check if phenotypes are loaded
-    assert [phenotype] == caf.ancillaryResults[
-        "phenotypes"
-    ], f"{phenotype} should be the only phenotype in caf.ancillary_results.phenotypes, instead got: {caf.ancillary_results.phenotypes}"
+    assert (
+        [phenotype] == caf.ancillaryResults["phenotypes"]
+    ), f"{phenotype} should be the only phenotype in caf.ancillary_results.phenotypes, instead got: {caf.ancillary_results.phenotypes}"
 
     # check if allele counts are accurate
     check_allele_counts(
