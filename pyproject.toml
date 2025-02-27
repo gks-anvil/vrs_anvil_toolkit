@@ -1,7 +1,7 @@
 [project]
-name = "vrs_anvil_toolki"
+name = "vrs_anvil_toolkit"
 authors = [
-    "GKS-AnVIL"
+    {"name" = "GKS-AnVIL"}
 ]
 readme = "README.md"
 classifiers = [
@@ -13,7 +13,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
 ]
-requires_python = ">=3.10"
+requires-python = ">=3.10"
 description = "TODO"
 license = {file = "LICENSE.md"}
 dependencies = [
@@ -60,7 +60,16 @@ vrs_bulk = "vrs_anvil.cli:cli"
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+vrs_anvil_toolkit = ["**/*.yaml"]
+
 [tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore::DeprecationWarning"]
