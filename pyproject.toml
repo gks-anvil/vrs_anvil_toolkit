@@ -53,8 +53,6 @@ Changelog = "https://github.com/gks-anvil/vrs_anvil_toolkit/releases"
 Source = "https://github.com/gks-anvil/vrs_anvil_toolkit"
 "Bug Tracker" = "https://github.com/gks-anvil/vrs_anvil_toolkit/issues"
 
-# TODO package data yaml
-
 [project.scripts]
 vrs_bulk = "vrs_anvil.cli:cli"
 
@@ -66,4 +64,3 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools_scm]
-
