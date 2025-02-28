@@ -42,8 +42,8 @@ tests = [
 ]
 dev = [
     "flake8",
-    "pre-commit",
     "black",
+    "pre-commit>=4.0.1",
 ]
 
 [project.urls]

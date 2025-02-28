@@ -19,7 +19,7 @@ jobs:
         run: |
           python3 -m pip install ".[tests]"
 
-      # TODO -- build CI-ready tests
+      # TODO -- build CI-ready unit tests
 
   lint:
     name: lint
@@ -36,12 +36,14 @@ jobs:
         run: python3 -m pip install ".[dev]"
 
       - name: Check style
-        run: python3 -m flake8
+        run: python3 -m flake8 src tests
 
   precommit_hooks:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        - cmd: "check-ast"
+        - cmd: "debug-statements"
         - cmd: "end-of-file-fixer"
         - cmd: "trailing-whitespace"
         - cmd: "mixed-line-ending"
