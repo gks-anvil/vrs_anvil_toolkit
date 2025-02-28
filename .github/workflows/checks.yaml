@@ -42,11 +42,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        - cmd: "check-ast"
-        - cmd: "debug-statements"
-        - cmd: "end-of-file-fixer"
-        - cmd: "trailing-whitespace"
-        - cmd: "mixed-line-ending"
+        cmd: 
+          - "check-ast"
+          - "debug-statements"
+          - "end-of-file-fixer"
+          - "trailing-whitespace"
+          - "mixed-line-ending"
     steps:
       - uses: actions/checkout@v4
 
