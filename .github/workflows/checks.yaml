@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cmd: 
+        cmd:
           - "check-ast"
           - "debug-statements"
           - "end-of-file-fixer"
