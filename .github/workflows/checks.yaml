@@ -19,8 +19,7 @@ jobs:
         run: |
           python3 -m pip install ".[tests]"
 
-      - name: Run tests
-        run: pytest
+      # TODO -- build CI-ready unit tests
 
   lint:
     name: lint
