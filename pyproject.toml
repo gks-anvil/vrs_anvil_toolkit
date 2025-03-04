@@ -1,0 +1,79 @@
+[project]
+name = "vrs_anvil_toolkit"
+authors = [
+    {"name" = "GKS-AnVIL"}
+]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.10"
+description = "Useful tools and methods for applying GA4GH GKS and VRS models on the NHGRI AnVIL platform."
+license = {file = "LICENSE.md"}
+dependencies = [
+    "ga4gh.vrs[extras]==2.0.0a13",
+    "diskcache",
+    "biocommons.seqrepo",
+    "glom",
+    "click",
+    "pyyaml",
+    "google",
+    "requests",
+    "boto3",
+    "tqdm",
+    "google-cloud-storage",
+    "psutil",
+    # for CAF generation:
+    "firecloud",
+    "ga4gh.va_spec~=0.2.0a0",
+    "pandas",
+    "vrsix==0.1.1",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+]
+dev = [
+    "flake8",
+    "black",
+    "pre-commit>=4.0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/gks-anvil/vrs_anvil_toolkit"
+Documentation = "https://github.com/gks-anvil/vrs_anvil_toolkit"
+Changelog = "https://github.com/gks-anvil/vrs_anvil_toolkit/releases"
+Source = "https://github.com/gks-anvil/vrs_anvil_toolkit"
+"Bug Tracker" = "https://github.com/gks-anvil/vrs_anvil_toolkit/issues"
+
+[project.scripts]
+vrs_bulk = "vrs_anvil.cli:cli"
+
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+vrs_anvil_toolkit = ["**/*.yaml"]
+
+[tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore::DeprecationWarning"]
