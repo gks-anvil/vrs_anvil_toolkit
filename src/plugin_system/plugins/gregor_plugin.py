@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pysam
 
 from plugin_system.plugins.base_plugin import BasePlugin
@@ -16,7 +18,7 @@ class GregorPlugin(BasePlugin):
     """
 
     def __init__(
-        self, phenotype_table_path: str | None = None, index_path: str | None = None
+        self, phenotype_table_path: Path | None = None, index_path: Path | None = None
     ):
         """constructor used to set a phenotype index if provided a file path for the index (index_path).
         Otherwise create a phenotype index using a Terra data table (no path specified) or with a csv/tsv filepath.
@@ -36,7 +38,7 @@ class GregorPlugin(BasePlugin):
         )
 
     def __create_phenotype_index(
-        self, phenotype_table_path: str | None = None, index_path: str | None = None
+        self, phenotype_table_path: Path | None = None, index_path: Path | None = None
     ) -> dict[str, list[str]]:
         """[private method] given phenotypical data input specified by the GREGoR Data model (in either tsv/csv/Terra data table),
         return a dictionary mapping from each sample to its list of phenotypes
@@ -73,7 +75,7 @@ class GregorPlugin(BasePlugin):
         return phenotype_index
 
     def include_sample(
-        self, sample_id: str, record: pysam.VariantRecord, phenotype: str
+        self, sample_id: str, record: pysam.VariantRecord, phenotype: str | None
     ) -> bool:
         """determine whether to include a sample in the cohort allele frequency based on its variant data and phenotypic traits.
         Directly inherit implementation from base plugin

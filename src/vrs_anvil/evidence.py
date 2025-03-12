@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 import sqlite3
@@ -8,14 +9,16 @@ from ga4gh.va_spec.base.core import DataSet, StudyGroup
 from pysam import VariantFile, VariantRecord
 from plugin_system.plugins.base_plugin import BasePlugin
 
+_logger = logging.getLogger(__name__)
+
 # location to register plugins classes
 PLUGIN_MODULE_PATH = "plugin_system.plugins"
 
 
 def get_cohort_allele_frequency(
     variant_id: str,
-    vcf_path: str,
-    vcf_index_path: str | None = None,
+    vcf_path: Path,
+    vcf_index_path: Path | None = None,
     participant_list: list[str] | None = None,
     phenotype: str | None = None,
     plugin: BasePlugin | None = None,
@@ -24,9 +27,8 @@ def get_cohort_allele_frequency(
 
     Args:
         variant_id (str): variant ID (VRS ID)
-        vcf_path (str): path to VCF
-        vcf_index_path (str): path to VRS to VCF coordinates index (SQLite table)
-        phenotype_table (str, optional): where to pull phenotype information from. Defaults to None.
+        vcf_path (Path): path to VCF
+        vcf_index_path (Path): path to VRS to VCF coordinates index (SQLite table)
         participant_list (list[str], optional): Subset of participants to use. Defaults to None.
         phenotype (str, optional): Specific phenotype to subset on. Defaults to None.
         plugin (BasePlugin, optional): Plugin object to use for custom processing. Defaults to None, loading in the BasePlugin.
@@ -46,7 +48,7 @@ def get_cohort_allele_frequency(
 
     # get index of variant to patient
     # in this case, the VCF row of the variant_id
-    vcf = VariantFile(vcf_path)
+    vcf = VariantFile(str(vcf_path.absolute()))
     record = get_vcf_row(variant_id, vcf, vcf_index_path)
 
     # if multiple alts, get index associated with alt allele
@@ -127,7 +129,7 @@ def get_cohort_allele_frequency(
 
     # populate final caf object according to va-spec-python
     caf = CAF(
-        sourceDataSet=DataSet(id=vcf_path, description=f"Created {datetime.now()}"),
+        sourceDataSet=DataSet(id=str(vcf_path), description=f"Created {datetime.now()}"),
         focusAllele=variant_id,
         focusAlleleCount=focus_allele_count,
         focusAlleleFrequency=allele_frequency,
@@ -139,23 +141,17 @@ def get_cohort_allele_frequency(
     return caf
 
 
-def fetch_by_vrs_ids(
-    vrs_ids: list[str], db_location: Path | None = None
-) -> list[tuple]:
+def fetch_by_vrs_ids(vrs_ids: list[str], db_location: Path) -> list[tuple]:
     """Access index by VRS ID.
 
     :param vrs_id: VRS allele hash (i.e. everything after ``"ga4gh:VA."``)
     :param db_location: path to sqlite file (assumed to exist)
     :return: location description tuple if available
     """
-
     trunc_vrs_ids = []
     for vrs_id in vrs_ids:
         trunc_vrs_id = vrs_id[9:] if vrs_id.startswith("ga4gh:VA.") else vrs_id
         trunc_vrs_ids.append(trunc_vrs_id)
-
-    if not db_location.exists():
-        raise OSError(f"Index at {db_location} does not exist")
 
     conn = sqlite3.connect(db_location)
 
@@ -177,8 +173,14 @@ def fetch_by_vrs_ids(
     return data
 
 
+class MissingVrsAnnotationError(Exception):
+    """Raise for missing VCF INFO columns, indicating failure to previously run VRS
+    annotation on the VCF.
+    """
+
+
 def get_vcf_row(
-    variant_id: str, vcf: VariantFile, index_path: str = None
+    variant_id: str, vcf: VariantFile, index_path: Path | None = None
 ) -> VariantRecord:
     """given a variant id and annotated VCF, get the associated VCF row
 
@@ -188,42 +190,43 @@ def get_vcf_row(
         index_path (str, optional): Index used to speed up search for variant. Defaults to iterating through VCF.
 
     Raises:
-        Exception: outputs if no index is found
+        MissingVrsAnnotationError: if VRS annotation on VCF appears to be missing
+        KeyError: if no row matching input parameters is found in the VCF
 
     Returns:
         VariantRecord: A Pysam VariantRecord (VCF row)
     """
 
     if "VRS_Allele_IDs" not in vcf.header.info:
-        raise KeyError(
+        raise MissingVrsAnnotationError(
             "no VRS_Allele_IDs key in INFO found, "
             "please ensure that this is an VRS annotated VCF"
         )
 
     # try to populate from Bash env variable
     if not index_path:
-        assert (
-            "VRS_VCF_INDEX" in os.environ
-        ), "no genotype index specified, no index path was provided nor was a variable name VRS_VCF_INDEX found."
-        index_path = Path(os.environ.get("VRS_VCF_INDEX"))
+        try:
+            index_path_env_var = os.environ["VRS_VCF_INDEX"]
+        except KeyError:
+            pass
+        else:
+            index_path = Path(index_path_env_var)
 
+    # if index provided, use it to get VCF row
     if index_path:
-        # if index provided, use it to get VCF row
-        index_path = Path(index_path)
-
+        if not index_path.exists():
+            raise FileNotFoundError(f"Index does not exist at given path {index_path}")
         # find variant of interest
         for _, chr, pos in fetch_by_vrs_ids([variant_id], index_path):
             # TODO [ISSUE-103]: generalize VCF fixtures
             for record in vcf.fetch(chr, pos - 1, pos):
                 if variant_id in record.info["VRS_Allele_IDs"]:
                     return record
-
-        raise KeyError(f"no VCF row found matching variant ID {variant_id}")
     else:
         # otherwise, iterate through VCF
-        for record in enumerate(vcf.fetch()):
-            print(
-                "no VCF index specified, iterating through VCF to locate variant of interest"
-            )
+        _logger.warning("no VCF index specified, iterating through VCF to locate variant of interest")
+        for record in vcf.fetch():
             if variant_id in record.info["VRS_Allele_IDs"]:
                 return record
+
+    raise KeyError(f"no VCF row found matching variant ID {variant_id}")

@@ -1,6 +1,7 @@
 import os
 import pytest
 import subprocess
+from pathlib import Path
 
 from ga4gh.va_spec.base.caf_study_result import CohortAlleleFrequencyStudyResult as CAF
 from ga4gh.vrs.extras.translator import AlleleTranslator
@@ -16,7 +17,7 @@ from vrs_anvil.evidence import get_cohort_allele_frequency
 
 @pytest.fixture()
 def existing_vcf_index_path():
-    return "tests/fixtures/chr1_multi_sample_index.db"
+    return Path("tests/fixtures/chr1_multi_sample_index.db")
 
 
 @pytest.fixture()
@@ -64,9 +65,9 @@ def variant_id():
 @pytest.fixture()
 def vcf_index_path():
     # this path should be empty before
-    path = "tests/fixtures/chr1_index.db"
+    path = Path("tests/fixtures/chr1_index.db")
 
-    if os.path.exists(path):
+    if path.exists():
         raise Exception(
             f"VCF index path ({path}) should not exist, please delete before continuing"
         )
@@ -79,7 +80,7 @@ def vcf_index_path():
 
 @pytest.fixture()
 def vcf_path():
-    return "tests/fixtures/chr1_multi_sample_vrs.vcf.gz"
+    return Path("tests/fixtures/chr1_multi_sample_vrs.vcf.gz")
 
 
 @pytest.fixture()
@@ -250,7 +251,7 @@ def test_simple_plugin_can_generate_cafs_with_phenotype_index(
 
 def test_plugin_worked_example(
     variant_id,
-    vcf_path: str,
+    vcf_path: Path,
     vcf_index_path: str,
     phenotype_index: dict[str, list[str]],
     phenotype: str,

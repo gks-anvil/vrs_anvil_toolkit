@@ -19,7 +19,7 @@ class BasePlugin(ABC):
         """
         self.phenotype_index = phenotype_index
 
-    def get_phenotype_index(self) -> dict[str, list[str]]:
+    def get_phenotype_index(self) -> dict[str, list[str]] | None:
         """getter for a dictionary mapping from each sample to the sample's phenotypes
 
         Returns:

@@ -163,4 +163,9 @@ cython_debug/
 settings.json
 
 # workspace
+*.log
 tmp/
+
+# sqlite temp file stuff
+*.db-shm
+*.db-wal
