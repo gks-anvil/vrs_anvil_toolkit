@@ -45,8 +45,7 @@ tests = [
     "pytest",
 ]
 dev = [
-    "flake8",
-    "black",
+    "ruff~=0.11.0",
     "pre-commit>=4.0.1",
 ]
 
@@ -77,3 +76,36 @@ vrs_anvil_toolkit = ["**/*.yaml"]
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "F",
+    "E", "W",
+    "I",
+    "A",
+    "LOG",
+    "G",
+    "RUF",
+]
+fixable = [
+    "I",
+    "F401",
+    "LOG",
+    "G",
+    "RUF",
+]
+ignore = [
+    "D203", "D205", "D206", "D213", "D300", "D400", "D415",
+    "E111", "E114", "E117", "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+
+[tool.ruff.lint.flake8-annotations]
+mypy-init-return = true
+
+[tool.ruff.format]
+docstring-code-format = true
