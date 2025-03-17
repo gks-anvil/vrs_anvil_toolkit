@@ -203,7 +203,7 @@ def get_vcf_row(
             "please ensure that this is an VRS annotated VCF"
         )
 
-    # try to populate from Bash env variable
+    # try to get index path from Bash env variable
     if not index_path:
         try:
             index_path_env_var = os.environ["VRS_VCF_INDEX"]
@@ -215,7 +215,7 @@ def get_vcf_row(
     # if index provided, use it to get VCF row
     if index_path:
         if not index_path.exists():
-            raise FileNotFoundError(f"Index does not exist at given path {index_path}")
+            raise FileNotFoundError(f"Index file does not exist at given path {index_path}")
         # find variant of interest
         for _, chr, pos in fetch_by_vrs_ids([variant_id], index_path):
             # TODO [ISSUE-103]: generalize VCF fixtures
