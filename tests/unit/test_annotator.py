@@ -155,8 +155,8 @@ def test_results(caching_translator):
         "duplication": (duplication_inputs, duplication_output),
     }
 
-    for variant_type, (input, expected_allele) in inputs_dict.items():
-        gnomad_expr = input["gnomad"]
+    for variant_type, (input_result, expected_allele) in inputs_dict.items():
+        gnomad_expr = input_result["gnomad"]
         # allele object validation
         allele_id = tlr.translate_from(fmt="gnomad", var=gnomad_expr)
 

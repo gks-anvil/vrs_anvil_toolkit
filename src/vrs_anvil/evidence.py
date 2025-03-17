@@ -179,7 +179,7 @@ def fetch_by_vrs_ids(
 
 
 def get_vcf_row(
-    variant_id: str, vcf: VariantFile, index_path: str = None
+    variant_id: str, vcf: VariantFile, index_path: str | None = None
 ) -> VariantRecord:
     """given a variant id and annotated VCF, get the associated VCF row
 
@@ -213,9 +213,9 @@ def get_vcf_row(
         index_path = Path(index_path)
 
         # find variant of interest
-        for _, chr, pos in fetch_by_vrs_ids([variant_id], index_path):
+        for _, chrom, pos in fetch_by_vrs_ids([variant_id], index_path):
             # TODO [ISSUE-103]: generalize VCF fixtures
-            for record in vcf.fetch(chr, pos - 1, pos):
+            for record in vcf.fetch(chrom, pos - 1, pos):
                 if variant_id in record.info["VRS_Allele_IDs"]:
                     return record
 

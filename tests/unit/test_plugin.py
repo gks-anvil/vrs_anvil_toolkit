@@ -146,7 +146,7 @@ def test_plugin_manager_loads_default_and_custom_plugin(
     # could be minor tech debt for devs wishing to run automated tests in the cloud
 
     # add custom plugin to list of plugin names to load
-    all_plugin_names = plugin_names + [custom_plugin_class_name]
+    all_plugin_names = [*plugin_names, custom_plugin_class_name]
 
     # load all plugins
     for plugin_name in all_plugin_names:

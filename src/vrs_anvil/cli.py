@@ -115,7 +115,7 @@ def annotate_cli(ctx, scatter: bool):
             manifest_path = f"{manifest.work_directory}/manifest_{timestamp_str}.yaml"
             save_manifest(manifest, manifest_path)
             click.secho(f"🔑 Manifest saved at {manifest_path}", fg="yellow")
-            _logger.debug(f"Manifest: {ctx.obj['manifest']}")
+            _logger.debug("Manifest: %s", ctx.obj['manifest'])
 
             click.secho("🚧  annotating variants", fg="yellow")
             metrics_file = annotate_all(
@@ -145,7 +145,7 @@ def annotate_cli(ctx, scatter: bool):
                 )
                 save_manifest(child_manifest, child_manifest_path)
                 click.secho(f"🔑 Manifest saved at {child_manifest_path}", fg="yellow")
-                _logger.debug(f"Manifest: {ctx.obj['manifest']}")
+                _logger.debug("Manifest: %s", ctx.obj['manifest'])
 
                 # run process to annotate each manifest
                 process = run_command_in_background(
@@ -272,7 +272,7 @@ def ps_cli(ctx):
                                 cpu_percent = process_info.cpu_percent(interval=0.1)
                         except Exception as exc:
                             _logger.info(
-                                f"could not get io_counters/memory_info pid: {process['pid']} error:{exc}"
+                                "could not get io_counters/memory_info pid: %s error:%s", process['pid'], exc
                             )
 
                         click.secho(

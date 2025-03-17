@@ -4,7 +4,7 @@ import os
 import subprocess
 import zipfile
 from pathlib import Path
-from typing import Any, Generator, Optional
+from typing import Any, Generator, Optional, Type
 
 import psutil
 import requests
@@ -22,7 +22,7 @@ LOGGED_ALREADY = set()
 METAKB_API = "https://dev-search.cancervariants.org/api/v2"
 
 
-manifest: "Manifest" = None
+manifest: Type["Manifest"] | None = None
 
 # TODO - read from manifest
 gigabytes = 20
@@ -86,7 +86,7 @@ class CachingAlleleTranslator(AlleleTranslator):
 
 
 def caching_allele_translator_factory(
-    normalize: bool = True, seqrepo_directory: str = None
+    normalize: bool = True, seqrepo_directory: str | None = None
 ):
     """Return a CachingAlleleTranslator instance with local seqrepo"""
     if not seqrepo_directory:
@@ -308,7 +308,7 @@ class Manifest(BaseModel):
         for _ in ["work_directory", "cache_directory", "state_directory"]:
             if not Path(getattr(self, _)).exists():
                 Path(getattr(self, _)).mkdir(parents=True, exist_ok=True)
-                _logger.debug(f"Created directory {getattr(self, _)}")
+                _logger.debug("Created directory %s", getattr(self, _))
 
         return self
 

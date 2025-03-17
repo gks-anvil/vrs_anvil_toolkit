@@ -52,5 +52,5 @@ caf = get_cohort_allele_frequency(
     phenotype=phenotype,
 )
 
-print(f"CAF:")
+print("CAF:")
 print(json.dumps(caf.model_dump(exclude_none=True), indent=2))

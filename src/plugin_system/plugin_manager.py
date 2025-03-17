@@ -28,10 +28,10 @@ class PluginManager:
         )
 
         # look for plugin by name first in default directory then in top-level directory
-        for i, iter in enumerate(
+        for i, iterable in enumerate(
             [pkgutil.iter_modules([default_plugin_dir]), pkgutil.iter_modules()]
         ):
-            for _, name, _ in iter:
+            for _, name, _ in iterable:
                 # only look for specific file names
                 if not name.endswith("_plugin"):
                     continue

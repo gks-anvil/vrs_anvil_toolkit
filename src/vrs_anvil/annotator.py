@@ -35,7 +35,7 @@ TIMESTAMP = "timestamp_str"
 
 
 def recursive_defaultdict():
-    """Implicitly create an entry if a key is read that doesn’t yet exist, any level deep"""
+    """Implicitly create an entry if a key is read that doesn't yet exist, any level deep"""
     return defaultdict(recursive_defaultdict)
 
 
@@ -88,10 +88,10 @@ def _vcf_item_generator(manifest: Manifest) -> Generator[tuple, None, None]:
                     )  # {"fmt": "gnomad", "var": gnomad_id}, work_file, line_number
 
                 if manifest.limit and line_number > manifest.limit:
-                    _logger.info(f"Limit of {manifest.limit} reached, stopping")
+                    _logger.info("Limit of %s reached, stopping", manifest.limit)
                     break
 
-            _logger.info(f"Setting metrics for {work_file}")
+            _logger.info("Setting metrics for %s", work_file)
             metrics[key][STATUS] = "finished"
             metrics[key][END_TIME] = time.time()
             metrics[key][LINE_COUNT] = line_number
@@ -100,7 +100,7 @@ def _vcf_item_generator(manifest: Manifest) -> Generator[tuple, None, None]:
             )
 
     _logger.info(
-        f"_vcf_generator: Finished processing all files in the manifest {total_lines} lines processed."
+        "_vcf_generator: Finished processing all files in the manifest %s lines processed.", total_lines
     )
 
 
@@ -119,7 +119,7 @@ def _vrs_generator(manifest: Manifest) -> Generator[dict, None, None]:
         yield result
         c += 1
     _logger.info(
-        f"_vrs_generator: Finished processing all vrs results in the manifest {c} results processed."
+        "_vrs_generator: Finished processing all vrs results in the manifest %s results processed.", c
     )
 
 
@@ -129,7 +129,7 @@ def vrs_ids(allele: VRS.Allele) -> list[str]:
 
 
 def annotate_all(
-    manifest: Manifest, max_errors: int, timestamp_str: str = None
+    manifest: Manifest, max_errors: int, timestamp_str: str | None = None
 ) -> pathlib.Path:
     """Annotate all the files in the manifest. Return a file with metrics."""
 
@@ -165,7 +165,7 @@ def annotate_all(
 
             # check metaKB cache, TODO - it would be nice if we had the metakb.study.id and added that to result_dict
             if metakb_proxy.get(allele_id):
-                _logger.info(f"VRS id {allele_id} found in metakb. {result}")
+                _logger.info("VRS id %s found in metakb. %s", allele_id, result)
 
                 # add vrs_id, allele_dict, actual evidence to this object as well (#3)
                 metrics[file_path][MATCHES][allele_id] = {

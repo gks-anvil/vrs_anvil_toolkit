@@ -34,11 +34,11 @@ def test_metakb_ids(
         cache_path=pathlib.Path(testing_manifest.cache_directory),
     )
 
-    for id in vrs_ids:
-        assert metakb_proxy.get(id), f"VRS id {id} not found in cache {id}"
+    for vrs_id in vrs_ids:
+        assert metakb_proxy.get(vrs_id), f"VRS id {vrs_id} not found in cache {vrs_id}"
 
-    for id in expected_vrs_ids:
-        assert metakb_proxy.get(id), f"Expected VRS id {id} not found in cache {id}"
+    for vrs_id in expected_vrs_ids:
+        assert metakb_proxy.get(vrs_id), f"Expected VRS id {vrs_id} not found in cache {vrs_id}"
 
     _, misses = metakb_proxy._cache.stats()
     assert misses == 0, f"Misses found in cache {misses}"

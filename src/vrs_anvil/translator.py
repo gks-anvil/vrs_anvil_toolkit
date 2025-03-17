@@ -40,7 +40,7 @@ class WorkerThread(threading.Thread):
                 self.task_queue.task_done()
 
             except Exception as exc:
-                _logger.exception(f"{self.name} error {exc}")
+                _logger.exception("%s error %s", self.name, exc)
                 self.busy = False
                 break
 

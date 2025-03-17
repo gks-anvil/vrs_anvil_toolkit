@@ -9,8 +9,8 @@ def validate_threaded_result(result, validate_passthrough=False):
     assert isinstance(allele_id, str), (
         f"translated VRS Allele ID is a {type(allele_id)} not a string"
     )
-    prefix, hash = allele_id.split(".")
-    assert prefix == "ga4gh:VA" and len(hash) == 32, (
+    prefix, allele_hash = allele_id.split(".")
+    assert prefix == "ga4gh:VA" and len(allele_hash) == 32, (
         "VRS Allele ID format has changed, consult https://vrs.ga4gh.org/en/stable/impl-guide/computed_identifiers.html#identify"
     )
 
