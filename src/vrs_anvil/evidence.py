@@ -36,9 +36,9 @@ def get_cohort_allele_frequency(
     """
 
     # check variant_id is VRS ID
-    assert (
-        "ga4gh:VA" in variant_id
-    ), "variant ID type not yet supported, use VRS ID instead"
+    assert "ga4gh:VA" in variant_id, (
+        "variant ID type not yet supported, use VRS ID instead"
+    )
 
     # use default plugin if none specified
     if plugin is None:
@@ -202,9 +202,9 @@ def get_vcf_row(
 
     # try to populate from Bash env variable
     if not index_path:
-        assert (
-            "VRS_VCF_INDEX" in os.environ
-        ), "no genotype index specified, no index path was provided nor was a variable name VRS_VCF_INDEX found."
+        assert "VRS_VCF_INDEX" in os.environ, (
+            "no genotype index specified, no index path was provided nor was a variable name VRS_VCF_INDEX found."
+        )
         index_path = Path(os.environ.get("VRS_VCF_INDEX"))
 
     if index_path:

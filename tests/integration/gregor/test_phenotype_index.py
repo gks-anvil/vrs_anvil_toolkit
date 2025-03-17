@@ -29,9 +29,9 @@ def test_gregor_plugin_creates_correct_phenotype_index(
         print("len(phenotypes_set):", len(phenotypes_set))
 
         expected_num_phenotypes = 980
-        assert (
-            len(phenotypes_set) == expected_num_phenotypes
-        ), f"Expected {expected_num_phenotypes} phenotypes, got {len(phenotypes_set)}"
+        assert len(phenotypes_set) == expected_num_phenotypes, (
+            f"Expected {expected_num_phenotypes} phenotypes, got {len(phenotypes_set)}"
+        )
 
         break
 
@@ -47,7 +47,7 @@ def test_loading_gregor_phenotype_index_by_path(
 
     loaded_index = load_dict(save_path)
 
-    assert (
-        index == loaded_index
-    ), "saved index does not match loaded index... use -vv flag for a better diff"
+    assert index == loaded_index, (
+        "saved index does not match loaded index... use -vv flag for a better diff"
+    )
     os.remove(save_path)

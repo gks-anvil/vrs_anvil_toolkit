@@ -48,9 +48,9 @@ def vrs_vcf_index() -> str:
     if os.path.exists(index_path):
         return str(index_path)
 
-    assert (
-        "PHENOTYPE_TABLE" in os.environ
-    ), "No VRS VCF index found, see tests/fixtures/gregor/README.md for setup"
+    assert "PHENOTYPE_TABLE" in os.environ, (
+        "No VRS VCF index found, see tests/fixtures/gregor/README.md for setup"
+    )
 
     return os.environ["VRS_VCF_INDEX"]
 
@@ -67,9 +67,9 @@ def phenotype_table_path() -> str | None:
     if os.path.exists(path):
         return str(path)
 
-    assert (
-        "PHENOTYPE_TABLE" in os.environ
-    ), "No phenotype table found, see tests/fixtures/gregor/README.md for setup"
+    assert "PHENOTYPE_TABLE" in os.environ, (
+        "No phenotype table found, see tests/fixtures/gregor/README.md for setup"
+    )
 
     return os.environ["PHENOTYPE_TABLE"]
 

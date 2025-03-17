@@ -80,9 +80,9 @@ def test_remote_vcf(chrY_vcf_path, start, stop, expected_record_count):
 
         for variant_record in records:
             my_participants = [_ for _ in participants(variant_record)]
-            assert len(my_participants) < len(
-                variant_record.samples
-            ), "Not all participants have this allele"
+            assert len(my_participants) < len(variant_record.samples), (
+                "Not all participants have this allele"
+            )
             assert len(my_participants) > 0, "No participants have this allele"
     except ValueError as e:
         print("ValueError: has GCS_OAUTH_TOKEN expired?", e)
@@ -145,12 +145,12 @@ def test_correct_caf_given_chr3_variant(
     print_caf(caf)
 
     # sanity checks
-    assert (
-        caf.type == "CohortAlleleFrequencyStudyResult"
-    ), f"object of type CohortAlleleFrequency not returned, returned {caf.type} instead"
-    assert (
-        caf.focusAlleleCount <= caf.locusAlleleCount
-    ), f"Focus allele count ({caf['focusAlleleCount']}) is larger than locus allele count ({caf['locusAlleleCount']})"
+    assert caf.type == "CohortAlleleFrequencyStudyResult", (
+        f"object of type CohortAlleleFrequency not returned, returned {caf.type} instead"
+    )
+    assert caf.focusAlleleCount <= caf.locusAlleleCount, (
+        f"Focus allele count ({caf['focusAlleleCount']}) is larger than locus allele count ({caf['locusAlleleCount']})"
+    )
 
     print("focusAlleleCount:", caf.focusAlleleCount)
     print("locusAlleleCount:", caf.locusAlleleCount)
@@ -159,12 +159,12 @@ def test_correct_caf_given_chr3_variant(
     check_caf_allele_data(caf, expected_fac=183, expected_lac=896)
 
     # ensure list of phenotypes stored
-    assert (
-        "phenotypes" in caf.ancillaryResults
-    ), "no phenotype key stored in caf.ancillaryResults"
-    assert (
-        len(caf.ancillaryResults["phenotypes"]) > 0
-    ), 'no phenotypes stored in caf.ancillaryResults["phenotypes"]'
+    assert "phenotypes" in caf.ancillaryResults, (
+        "no phenotype key stored in caf.ancillaryResults"
+    )
+    assert len(caf.ancillaryResults["phenotypes"]) > 0, (
+        'no phenotypes stored in caf.ancillaryResults["phenotypes"]'
+    )
 
 
 def test_correct_caf_given_chr3_variant_and_pheno(
@@ -184,12 +184,12 @@ def test_correct_caf_given_chr3_variant_and_pheno(
     print_caf(caf)
 
     # sanity checks
-    assert (
-        caf.type == "CohortAlleleFrequencyStudyResult"
-    ), f"object of type CohortAlleleFrequency not returned, returned {caf.type} instead"
-    assert (
-        caf.focusAlleleCount <= caf.locusAlleleCount
-    ), f"Focus allele count ({caf['focusAlleleCount']}) is larger than locus allele count ({caf['locusAlleleCount']})"
+    assert caf.type == "CohortAlleleFrequencyStudyResult", (
+        f"object of type CohortAlleleFrequency not returned, returned {caf.type} instead"
+    )
+    assert caf.focusAlleleCount <= caf.locusAlleleCount, (
+        f"Focus allele count ({caf['focusAlleleCount']}) is larger than locus allele count ({caf['locusAlleleCount']})"
+    )
 
     print("focusAlleleCount:", caf.focusAlleleCount)
     print("locusAlleleCount:", caf.locusAlleleCount)
@@ -223,17 +223,17 @@ def test_correct_allele_freq_for_multi_alts_chrY_variant(
     # check allele frequency
     expected_allele_freq = 0.0491
     actual_allele_freq = approx(caf.focusAlleleFrequency, abs=1e-4)
-    assert (
-        actual_allele_freq == expected_allele_freq
-    ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
+    assert actual_allele_freq == expected_allele_freq, (
+        f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
+    )
 
     # ensure list of phenotypes stored
-    assert (
-        "phenotypes" in caf.ancillaryResults
-    ), "no phenotype key stored in caf.ancillaryResults"
-    assert (
-        len(caf.ancillaryResults["phenotypes"]) > 0
-    ), 'no phenotypes stored in caf.ancillaryResults["phenotypes"]'
+    assert "phenotypes" in caf.ancillaryResults, (
+        "no phenotype key stored in caf.ancillaryResults"
+    )
+    assert len(caf.ancillaryResults["phenotypes"]) > 0, (
+        'no phenotypes stored in caf.ancillaryResults["phenotypes"]'
+    )
 
 
 def test_correct_allele_freq_for_multi_alts_chrY_variant_and_phenotype(
@@ -253,9 +253,9 @@ def test_correct_allele_freq_for_multi_alts_chrY_variant_and_phenotype(
 
     expected_allele_freq = 0.1034
     actual_allele_freq = approx(caf.focusAlleleFrequency, abs=1e-4)
-    assert (
-        actual_allele_freq == expected_allele_freq
-    ), f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
+    assert actual_allele_freq == expected_allele_freq, (
+        f"incorrect allele frequency, expected {expected_allele_freq} got {actual_allele_freq}"
+    )
 
 
 ###########
@@ -277,9 +277,9 @@ def check_caf_allele_data(caf, expected_fac, expected_lac):
 
     # assert calculated values are expected
     for actual, expected, name in actual_expected_pairs_with_name:
-        assert (
-            actual == expected
-        ), f"incorrect {name}, expected {expected_fac} got {caf.focusAlleleFrequency}"
+        assert actual == expected, (
+            f"incorrect {name}, expected {expected_fac} got {caf.focusAlleleFrequency}"
+        )
 
 
 def print_caf(caf):

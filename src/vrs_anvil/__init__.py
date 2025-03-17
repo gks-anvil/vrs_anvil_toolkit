@@ -76,9 +76,9 @@ class CachingAlleleTranslator(AlleleTranslator):
 
         allele = super().translate_from(var, fmt=fmt, **kwargs)
 
-        assert isinstance(
-            allele, VRS.Allele
-        ), f"Allele is not the expected Pydantic Model {type(allele)}: {allele}"
+        assert isinstance(allele, VRS.Allele), (
+            f"Allele is not the expected Pydantic Model {type(allele)}: {allele}"
+        )
 
         if self._cache is not None:
             self._cache[key] = allele.id

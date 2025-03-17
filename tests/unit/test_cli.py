@@ -77,9 +77,9 @@ def test_cli_version():
     expected_strings = ["version"]
     print(result.output)
     for expected_string in expected_strings:
-        assert (
-            expected_string in result.output
-        ), f"Should have printed {expected_string}"
+        assert expected_string in result.output, (
+            f"Should have printed {expected_string}"
+        )
 
 
 def test_loading_manifest(mock_cli_manifest):
@@ -91,9 +91,9 @@ def test_loading_manifest(mock_cli_manifest):
     expected_strings = Manifest.model_fields.keys()
     print(result.output)
     for expected_string in expected_strings:
-        assert (
-            expected_string in result.output
-        ), f"Should have printed {expected_string}"
+        assert expected_string in result.output, (
+            f"Should have printed {expected_string}"
+        )
 
 
 def test_using_suffix(mock_cli_manifest, suffix):
@@ -150,17 +150,17 @@ def test_ps_returns_recent_files(ps_dir, monkeypatch, recent_timestamp, num_vcfs
 
     # check successful command and loaded most recent process file
     assert result.exit_code == 0, f"result failed with message: \n{result}"
-    assert (
-        "no scattered processes" not in result.output
-    ), "no scattered processes located"
+    assert "no scattered processes" not in result.output, (
+        "no scattered processes located"
+    )
     assert recent_timestamp in result.output, "most recent date has not been chosen"
 
     # check metrics and manifest files located
     for i in range(num_vcfs):
-        assert (
-            f"manifest_scattered_{recent_timestamp}_{i}.yaml" in result.output
-        ), f"manifest #{i} of {num_vcfs} not found"
+        assert f"manifest_scattered_{recent_timestamp}_{i}.yaml" in result.output, (
+            f"manifest #{i} of {num_vcfs} not found"
+        )
 
-        assert (
-            f"metrics_scattered_{recent_timestamp}_{i}.yaml" in result.output
-        ), f"metrics file #{i} of {num_vcfs} not found"
+        assert f"metrics_scattered_{recent_timestamp}_{i}.yaml" in result.output, (
+            f"metrics file #{i} of {num_vcfs} not found"
+        )
