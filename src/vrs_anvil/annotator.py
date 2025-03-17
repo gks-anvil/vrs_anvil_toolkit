@@ -100,7 +100,8 @@ def _vcf_item_generator(manifest: Manifest) -> Generator[tuple, None, None]:
             )
 
     _logger.info(
-        "_vcf_generator: Finished processing all files in the manifest %s lines processed.", total_lines
+        "_vcf_generator: Finished processing all files in the manifest %s lines processed.",
+        total_lines,
     )
 
 
@@ -119,7 +120,8 @@ def _vrs_generator(manifest: Manifest) -> Generator[dict, None, None]:
         yield result
         c += 1
     _logger.info(
-        "_vrs_generator: Finished processing all vrs results in the manifest %s results processed.", c
+        "_vrs_generator: Finished processing all vrs results in the manifest %s results processed.",
+        c,
     )
 
 

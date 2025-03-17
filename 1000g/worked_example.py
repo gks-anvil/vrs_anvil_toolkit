@@ -9,9 +9,9 @@ from plugin_system.plugin_manager import PluginManager
 from vrs_anvil.evidence import get_cohort_allele_frequency
 
 # run this in 1000g directory
-assert os.getcwd().endswith(
-    "1000g"
-), "to ensure the plugin can be located, please run this in the 1000g directory"
+assert os.getcwd().endswith("1000g"), (
+    "to ensure the plugin can be located, please run this in the 1000g directory"
+)
 
 # set varaible for variant data input
 variant_id = "chr1-20094-TAA-T"

@@ -38,7 +38,9 @@ def test_metakb_ids(
         assert metakb_proxy.get(vrs_id), f"VRS id {vrs_id} not found in cache {vrs_id}"
 
     for vrs_id in expected_vrs_ids:
-        assert metakb_proxy.get(vrs_id), f"Expected VRS id {vrs_id} not found in cache {vrs_id}"
+        assert metakb_proxy.get(vrs_id), (
+            f"Expected VRS id {vrs_id} not found in cache {vrs_id}"
+        )
 
     _, misses = metakb_proxy._cache.stats()
     assert misses == 0, f"Misses found in cache {misses}"
