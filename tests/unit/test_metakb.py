@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from vrs_anvil import metakb_ids, MetaKBProxy
+from vrs_anvil import MetaKBProxy, metakb_ids
 
 
 @pytest.fixture

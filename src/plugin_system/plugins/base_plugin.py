@@ -1,6 +1,6 @@
-import pysam
-
 from abc import ABC
+
+import pysam
 
 
 class BasePlugin(ABC):

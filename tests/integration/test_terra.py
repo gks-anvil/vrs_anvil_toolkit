@@ -1,7 +1,8 @@
 import os
+
 import pytest
 
-from plugin_system.utils import terra_data_table_to_dataframe, WORKSPACE_ENV_KEYS
+from plugin_system.utils import WORKSPACE_ENV_KEYS, terra_data_table_to_dataframe
 
 
 @pytest.fixture()

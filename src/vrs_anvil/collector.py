@@ -1,11 +1,13 @@
 import os
 import pathlib
-from typing import Generator
-import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from vrs_anvil import Manifest
-from google.cloud import storage
+from typing import Generator
+
 import boto3
+import requests
+from google.cloud import storage
+
+from vrs_anvil import Manifest
 
 
 # TODO - not tested

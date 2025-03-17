@@ -1,7 +1,8 @@
 import time
+from unittest.mock import MagicMock, patch
 
 import pytest
-from unittest.mock import patch, MagicMock
+
 from vrs_anvil.collector import collect_manifest_urls
 
 

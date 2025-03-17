@@ -2,7 +2,7 @@ import logging
 import queue
 import threading
 from dataclasses import dataclass, field
-from typing import NamedTuple, Generator, Any, Optional
+from typing import Any, Generator, NamedTuple, Optional
 
 from pydantic import BaseModel
 

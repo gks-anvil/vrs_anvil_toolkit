@@ -4,7 +4,7 @@ from typing import Generator
 
 import pytest
 
-from vrs_anvil.translator import threaded_translator, VCFItem
+from vrs_anvil.translator import VCFItem, threaded_translator
 
 _logger = logging.getLogger("vrs_anvil.test_translator")
 

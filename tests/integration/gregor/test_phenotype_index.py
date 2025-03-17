@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from pysam import VariantFile
 
 from plugin_system.plugins.gregor_plugin import GregorPlugin

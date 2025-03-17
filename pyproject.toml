@@ -79,6 +79,9 @@ filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.ruff]
 src = ["src"]
+extend-ignore = [
+    "scripts/"
+]
 
 [tool.ruff.lint]
 select = [

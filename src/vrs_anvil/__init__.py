@@ -2,21 +2,20 @@ import json
 import logging
 import os
 import subprocess
-from typing import Optional, Generator, Any
 import zipfile
+from pathlib import Path
+from typing import Any, Generator, Optional
 
 import psutil
+import requests
+import yaml
 from biocommons.seqrepo import SeqRepo
 from diskcache import Cache
 from ga4gh.vrs import models as VRS
 from ga4gh.vrs.dataproxy import SeqRepoDataProxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from pathlib import Path
 from glom import glom
 from pydantic import BaseModel, model_validator
-import requests
-import yaml
-
 
 _logger = logging.getLogger("vrs_anvil")
 LOGGED_ALREADY = set()

@@ -1,19 +1,19 @@
+import logging
 import os
+import pathlib
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 
 import click
 import yaml
-import logging
 
 from vrs_anvil import (
     Manifest,
-    run_command_in_background,
     get_process_info,
+    run_command_in_background,
     save_manifest,
 )
 from vrs_anvil.annotator import annotate_all
-from logging.handlers import RotatingFileHandler
-import pathlib
 
 # Set up logging
 log_format = "%(asctime)s %(threadName)s %(name)s [%(levelname)s] %(message)s"
@@ -250,7 +250,7 @@ def ps_cli(ctx):
                     pass
 
                 click.secho(
-                    f"🚧  pid: {str(process['pid'])}, manifest: {str(process['manifest'])}, vcf: {str(process['vcf'])}, metrics_file: {metrics_file}, log_file: {log_file}",
+                    f"🚧  pid: {process['pid']!s}, manifest: {process['manifest']!s}, vcf: {process['vcf']!s}, metrics_file: {metrics_file}, log_file: {log_file}",
                     fg="yellow",
                 )
                 process_info = get_process_info(process["pid"])

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-import pytest
 
+import pytest
 from pysam import VariantFile
 
 from plugin_system.plugin_manager import PluginManager

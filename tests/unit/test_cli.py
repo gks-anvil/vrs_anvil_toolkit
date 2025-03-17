@@ -1,11 +1,12 @@
 import os
-from pathlib import Path
 import shutil
-import pytest
-
-from click.testing import CliRunner
 from glob import glob
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
+from click.testing import CliRunner
+
 from vrs_anvil import Manifest
 from vrs_anvil.cli import cli
 
@@ -51,7 +52,7 @@ def mock_cli_manifest(tmp_path, monkeypatch, manifest_path, testing_manifest):
 
     # create metakb cdm path
     metakb_rel_path = str(Path(testing_manifest.metakb_directory))
-    metakb_test_dir = f"{tmp_path}/{str(metakb_rel_path)}"
+    metakb_test_dir = f"{tmp_path}/{metakb_rel_path!s}"
     os.makedirs(metakb_test_dir)
     shutil.copytree(metakb_rel_path, metakb_test_dir, dirs_exist_ok=True)
 

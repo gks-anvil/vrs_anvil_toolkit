@@ -2,8 +2,8 @@ import io
 import json
 import os
 
-from firecloud import api as fapi
 import pandas as pd
+from firecloud import api as fapi
 
 ####################################
 #  utilities for transforming data #

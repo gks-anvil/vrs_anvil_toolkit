@@ -1,7 +1,7 @@
 # plugin_system/plugin_manager.py
-import pkgutil
 import importlib
 import os
+import pkgutil
 
 from plugin_system.plugins.base_plugin import BasePlugin
 from vrs_anvil.evidence import PLUGIN_MODULE_PATH

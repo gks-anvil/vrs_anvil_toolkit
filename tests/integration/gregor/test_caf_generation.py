@@ -1,8 +1,8 @@
 import json
 import os
-import pytest
-
 from typing import Generator
+
+import pytest
 from pysam import VariantFile, VariantRecord
 from pytest import approx
 

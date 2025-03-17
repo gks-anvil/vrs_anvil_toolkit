@@ -1,11 +1,12 @@
 import os
-from pathlib import Path
 import sqlite3
-
 from datetime import datetime
+from pathlib import Path
+
 from ga4gh.va_spec.base.caf_study_result import CohortAlleleFrequencyStudyResult as CAF
 from ga4gh.va_spec.base.core import DataSet, StudyGroup
 from pysam import VariantFile, VariantRecord
+
 from plugin_system.plugins.base_plugin import BasePlugin
 
 # location to register plugins classes
@@ -163,7 +164,7 @@ def fetch_by_vrs_ids(
     # should still be safe against injection by using parameterized query
     placeholders = ",".join("?" for _ in trunc_vrs_ids)
     result = conn.cursor().execute(
-        f"SELECT vrs_id, chr, pos FROM vrs_locations WHERE vrs_id IN ({placeholders})",  # noqa: S608
+        f"SELECT vrs_id, chr, pos FROM vrs_locations WHERE vrs_id IN ({placeholders})",
         trunc_vrs_ids,
     )
     data = result.fetchall()

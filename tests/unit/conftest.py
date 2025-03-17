@@ -4,8 +4,8 @@ import pathlib
 import pytest
 import yaml
 
+from vrs_anvil import Manifest, caching_allele_translator_factory
 from vrs_anvil.translator import Translator
-from vrs_anvil import caching_allele_translator_factory, Manifest
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)

@@ -2,11 +2,11 @@ import json
 import os
 import subprocess
 
-from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.dataproxy import create_dataproxy
+from ga4gh.vrs.extras.translator import AlleleTranslator
+
 from plugin_system.plugin_manager import PluginManager
 from vrs_anvil.evidence import get_cohort_allele_frequency
-
 
 # run this in 1000g directory
 assert os.getcwd().endswith(
