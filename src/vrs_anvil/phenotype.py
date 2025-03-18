@@ -1,4 +1,6 @@
-"""Utilize phenotype mapping and ontology traversal to generate...."""
+"""Utilize phenotype mapping and ontology traversal to generate dependency graphs
+to support more flexible phenotype searches during cohort construction.
+"""
 
 from collections import defaultdict
 from enum import Enum
@@ -12,19 +14,30 @@ class OntologyPrefix(str, Enum):
 
 
 class OntologyIndex:
+    """Container for HPO and MONDO term lookups.
+
+    >>> from vrs_anvil.phenotype import OntologyIndex
+    >>> index = OntologyIndex()
+    >>> index.get_child_terms("HP:0001618")
+    {"HP:0001618", "HP:0007024", "HP:0012049"}
+
+    """
 
     def __init__(self):
+        """Construct ontology index.
+
+        Ingest MONDO and HPO, build mappings between parent and child terms.
+        """
         self.dependency_map = defaultdict(list)
         self.label_map = {}
 
         mondo_reader = self._get_mondo_reader()
         hpo_reader = self._get_hpo_reader()
 
-        self.ingest_ontology(mondo_reader, OntologyPrefix.MONDO)
-        self.ingest_ontology(hpo_reader, OntologyPrefix.HP)
+        self._ingest_ontology(mondo_reader, OntologyPrefix.MONDO)
+        self._ingest_ontology(hpo_reader, OntologyPrefix.HP)
 
-
-    def ingest_ontology(self, reader, prefix: OntologyPrefix):
+    def _ingest_ontology(self, reader, prefix: OntologyPrefix):
         for term in reader:
             term_id = str(term.id)
             if not term_id.startswith(prefix.value):
@@ -54,6 +67,15 @@ class OntologyIndex:
 
 
     def get_child_terms(self, term: str) -> set[str]:
+        """Retrieve child terms for an ontology term, i.e. all terms which have an
+        `is_a` relationship with the given term.
+
+        Args:
+            term: HPO or MONDO ontology term, including prefix
+
+        Returns:
+            set of child terms
+        """
         if term not in self.dependency_map:
             raise KeyError
 
