@@ -17,7 +17,7 @@ def get_cohort_allele_frequency(
     vcf_path: str,
     vcf_index_path: str | None = None,
     participant_list: list[str] | None = None,
-    phenotype: str | None = None,
+    phenotypes: list[str] | None = None,
     plugin: BasePlugin | None = None,
 ) -> CAF:
     """Create a cohort allele frequency for either genotypes or phenotypes
@@ -28,7 +28,7 @@ def get_cohort_allele_frequency(
         vcf_index_path (str): path to VRS to VCF coordinates index (SQLite table)
         phenotype_table (str, optional): where to pull phenotype information from. Defaults to None.
         participant_list (list[str], optional): Subset of participants to use. Defaults to None.
-        phenotype (str, optional): Specific phenotype to subset on. Defaults to None.
+        phenotypes (str, optional): Specific phenotype to subset on. Defaults to None.
         plugin (BasePlugin, optional): Plugin object to use for custom processing. Defaults to None, loading in the BasePlugin.
 
     Returns:
@@ -63,7 +63,7 @@ def get_cohort_allele_frequency(
     # variables for cohort allele frequency (CAF) object
     focus_allele_count = 0
     locus_allele_count = 0
-    cohort_phenotypes = set() if phenotype is None else [phenotype]
+    cohort_phenotypes = set() if phenotypes is None else [phenotypes]
 
     # only relevat if the variant is diploid
     num_homozygotes = 0
@@ -81,8 +81,8 @@ def get_cohort_allele_frequency(
             continue
 
         # 3. matches subcohort criteria
-        should_include_sample = plugin.include_sample(sample_id, record, phenotype)
-        if phenotype is not None and not should_include_sample:
+        should_include_sample = plugin.include_sample(sample_id, record, phenotypes)
+        if phenotypes is not None and not should_include_sample:
             continue
 
         # with these conditions satisfied...
@@ -101,7 +101,7 @@ def get_cohort_allele_frequency(
             num_homozygotes += 1
 
         # update phenotypes as necessary
-        if phenotype is not None:
+        if phenotypes is not None:
             continue
         else:
             # aggregate phenotypes if they exist
@@ -114,10 +114,10 @@ def get_cohort_allele_frequency(
         focus_allele_count * 1.0 / locus_allele_count if locus_allele_count != 0 else 0
     )
 
-    if phenotype is None:
+    if phenotypes is None:
         cohort = StudyGroup(id="ALL", label="Overall")
     else:
-        cohort = StudyGroup(id=phenotype, label=phenotype)
+        cohort = StudyGroup(id=phenotypes, label=phenotypes)
 
     ancillary_results = {
         "homozygotes": num_homozygotes,

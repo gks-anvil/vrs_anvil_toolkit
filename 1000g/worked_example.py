@@ -49,7 +49,7 @@ caf = get_cohort_allele_frequency(
     vcf_path=vcf_path,
     vcf_index_path=vcf_index_path,
     plugin=simple_plugin,
-    phenotype=phenotype,
+    phenotypes=phenotype,
 )
 
 print(f"CAF:")

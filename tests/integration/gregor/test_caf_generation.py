@@ -179,7 +179,7 @@ def test_correct_caf_given_chr3_variant_and_pheno(
         chr3_vcf_path,
         vcf_index_path=vrs_vcf_index,
         plugin=gregor_plugin,
-        phenotype=phenotype,
+        phenotypes=phenotype,
     )
     print_caf(caf)
 
@@ -247,7 +247,7 @@ def test_correct_allele_freq_for_multi_alts_chrY_variant_and_phenotype(
         chrY_vcf_path,
         vcf_index_path=vrs_vcf_index,
         plugin=gregor_plugin,
-        phenotype=phenotype,
+        phenotypes=phenotype,
     )
     print_caf(caf)
 

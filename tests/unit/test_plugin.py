@@ -232,7 +232,7 @@ def test_simple_plugin_can_generate_cafs_with_phenotype_index(
         vcf_path=vcf_path,
         vcf_index_path=existing_vcf_index_path,
         plugin=simple_plugin,
-        phenotype=phenotype,
+        phenotypes=phenotype,
     )
 
     print(f"CAF with phenotype: {caf}")
@@ -296,7 +296,7 @@ def test_plugin_worked_example(
         vcf_path=vcf_path,
         vcf_index_path=vcf_index_path,
         plugin=simple_plugin,
-        phenotype=phenotype,
+        phenotypes=phenotype,
     )
 
     print("caf:", caf)
