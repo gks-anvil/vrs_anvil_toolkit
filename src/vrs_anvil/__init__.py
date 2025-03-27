@@ -18,7 +18,7 @@ import requests
 import yaml
 
 
-_logger = logging.getLogger("vrs_anvil")
+_logger = logging.getLogger(__name__)
 LOGGED_ALREADY = set()
 METAKB_API = "https://dev-search.cancervariants.org/api/v2"
 

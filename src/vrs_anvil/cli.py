@@ -18,7 +18,7 @@ import pathlib
 # Set up logging
 log_format = "%(asctime)s %(threadName)s %(name)s [%(levelname)s] %(message)s"
 
-_logger = logging.getLogger("vrs_anvil.cli")
+_logger = logging.getLogger(__name__)
 
 
 @click.group(invoke_without_command=True)

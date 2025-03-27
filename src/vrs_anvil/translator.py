@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from vrs_anvil import caching_allele_translator_factory
 
-_logger = logging.getLogger("vrs_anvil.translator")
+_logger = logging.getLogger(__name__)
 
 
 class WorkerThread(threading.Thread):
