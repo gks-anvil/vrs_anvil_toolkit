@@ -20,7 +20,7 @@ requires-python = ">=3.10"
 description = "Useful tools and methods for applying GA4GH GKS and VRS models on the NHGRI AnVIL platform."
 license = {file = "LICENSE.md"}
 dependencies = [
-    "ga4gh.vrs[extras]==2.0.0a13",
+    "ga4gh.vrs[extras]==2.0.0",
     "diskcache",
     "biocommons.seqrepo",
     "glom",

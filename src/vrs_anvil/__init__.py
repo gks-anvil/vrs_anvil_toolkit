@@ -6,10 +6,9 @@ from typing import Optional, Generator, Any
 import zipfile
 
 import psutil
-from biocommons.seqrepo import SeqRepo
 from diskcache import Cache
 from ga4gh.vrs import models as VRS
-from ga4gh.vrs.dataproxy import SeqRepoDataProxy
+from ga4gh.vrs.dataproxy import _DataProxy, create_dataproxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from pathlib import Path
 from glom import glom
@@ -31,17 +30,6 @@ bytes_in_a_gigabyte = 1024**3  # 1 gigabyte = 1024^3 bytes
 cache_size_limit = gigabytes * bytes_in_a_gigabyte
 
 
-def seqrepo_dir():
-    """Return the seqrepo directory."""
-    with open(".env") as f:
-        for line in f:
-            # Ignore comments and empty lines
-            if line.strip() and not line.strip().startswith("#"):
-                key, value = line.strip().split("=", 1)
-                if key == "SEQREPO_ROOT":
-                    return value + "/latest"
-
-
 def get_cache_directory(cache_dir: str, cache_name: str) -> str:
     """Return the cache directory."""
     return str(Path(cache_dir) / cache_name)
@@ -52,7 +40,9 @@ class CachingAlleleTranslator(AlleleTranslator):
 
     _cache: Cache = None
 
-    def __init__(self, data_proxy: SeqRepoDataProxy, normalize: bool = False):
+    def __init__(
+        self, data_proxy: _DataProxy, normalize: bool = False
+    ):
         super().__init__(data_proxy)
         self.normalize = normalize
         self._cache = None
@@ -87,16 +77,13 @@ class CachingAlleleTranslator(AlleleTranslator):
 
 
 def caching_allele_translator_factory(
-    normalize: bool = True, seqrepo_directory: str = None
+    normalize: bool = True, seqrepo_uri: str | None = None
 ):
-    """Return a CachingAlleleTranslator instance with local seqrepo"""
-    if not seqrepo_directory:
-        if manifest and manifest.seqrepo_directory:
-            seqrepo_directory = manifest.seqrepo_directory
-        else:
-            seqrepo_directory = seqrepo_dir()
-    dp = SeqRepoDataProxy(SeqRepo(seqrepo_directory))
-    assert dp is not None, "SeqRepoDataProxy is None"
+    """Return a CachingAlleleTranslator instance with a SeqRepo dataproxy."""
+    if seqrepo_uri is None:
+        if manifest and manifest.seqrepo_uri:
+            seqrepo_uri = manifest.seqrepo_uri
+    dp = create_dataproxy(seqrepo_uri)
     translator = CachingAlleleTranslator(dp)
     translator.normalize = normalize
     return translator
@@ -270,8 +257,8 @@ class Manifest(BaseModel):
     work_directory: str = "work/"
     """The directory to store intermediate files"""
 
-    seqrepo_directory: str = "~/seqrepo/latest"
-    """The directory where seqrepo is located"""
+    seqrepo_uri: str | None = None
+    """Description of the available SeqRepo resource. See SeqRepo docs for full spec."""
 
     normalize: bool = True
     """Normalize the VRS ids"""
@@ -296,15 +283,13 @@ class Manifest(BaseModel):
     @model_validator(mode="after")
     def check_paths(self) -> "Manifest":
         """Post init method to set the cache directory."""
-        self.seqrepo_directory = str(Path(self.seqrepo_directory).expanduser())
         self.work_directory = str(Path(self.work_directory).expanduser())
         self.cache_directory = str(Path(self.cache_directory).expanduser())
         self.state_directory = str(Path(self.state_directory).expanduser())
         self.metakb_directory = str(Path(self.metakb_directory).expanduser())
 
-        for _ in ["seqrepo_directory", "metakb_directory"]:
-            if not Path(getattr(self, _)).exists():
-                raise ValueError(f"{_} does not exist")
+        if not Path(self.metakb_directory).exists():
+            raise ValueError("MetaKB directory does not exist")
 
         for _ in ["work_directory", "cache_directory", "state_directory"]:
             if not Path(getattr(self, _)).exists():

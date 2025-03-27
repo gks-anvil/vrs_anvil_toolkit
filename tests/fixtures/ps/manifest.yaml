@@ -17,8 +17,6 @@ work_directory: "work"
 vcf_files:
   - "tests/fixtures/1kGP.chr1.1000.vcf"
 
-seqrepo_directory: "~/seqrepo/latest"
-
 normalize: false
 
 metakb_directory: "../metakb"

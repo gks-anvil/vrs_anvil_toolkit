@@ -11,18 +11,17 @@ import requests
 from biocommons.seqrepo import SeqRepo
 from datetime import datetime
 from ga4gh.vrs import models
-from ga4gh.vrs.dataproxy import SeqRepoDataProxy
+from ga4gh.vrs.dataproxy import SeqRepoDataProxy, create_dataproxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from ga4gh.vrs.extras.vcf_annotation import VCFAnnotator
+from ga4gh.vrs.extras.annotator.vcf import VcfAnnotator
 from pathlib import Path
-from vrs_anvil import seqrepo_dir
 
 # TODO: remove after adding MetaKB API query functionality
 
 
 # get vrs ids
 def translate(gnomad_expr):
-    data_proxy = SeqRepoDataProxy(SeqRepo(seqrepo_dir()))
+    data_proxy = create_dataproxy()
     translator = AlleleTranslator(data_proxy)
     allele = translator._from_gnomad(gnomad_expr)
     return (gnomad_expr, dict(allele))
@@ -37,7 +36,7 @@ def annotate_vcf(path, require_validation=False):
     output_vcf = ""
     output_pkl = f"{stem}-vrs-objects.pkl"
 
-    vcf_annotator = VCFAnnotator(seqrepo_root_dir=seqrepo_dir())
+    vcf_annotator = VcfAnnotator(data_proxy=create_dataproxy())
     vcf_annotator.tlr.rle_seq_limit = None
     vcf_annotator.annotate(
         vcf_in=input_vcf,

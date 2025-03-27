@@ -23,9 +23,6 @@ work_directory: "work/"
 # Stores the vrs_id and metakb cache if cache_enabled (defaults to cache/)
 cache_directory: "cache/"
 
-# installation path for seqrepo (reference sequences)
-seqrepo_directory: "~/seqrepo/latest"
-
 # where to find JSON evidence files
 metakb_directory: "tests/fixtures/metakb"
 
