@@ -39,10 +39,8 @@ def test_gregor_plugin_creates_correct_phenotype_index(
 def test_loading_gregor_phenotype_index_by_path(
     gregor_plugin: GregorPlugin, tmp_path: Path
 ):
-    os.chdir(tmp_path)
-
     index = gregor_plugin.get_phenotype_index()
-    save_path = "index.json"
+    save_path = tmp_path / "index.json"
     save_dict(index, save_path)
 
     loaded_index = load_dict(save_path)
