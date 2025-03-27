@@ -31,7 +31,7 @@ def vrs_id_chr3(chr3_vcf_path):
         if record.ref == "CTT":
             return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
 
-    raise ("couldn't find record for vrs_id_solo_alt")
+    raise FileNotFoundError("couldn't find record for vrs_id_solo_alt")
     # for i, record in enumerate(VariantFile(remote_chry_vcf_path)):
     #     if i == 10:
     #         return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
@@ -50,7 +50,7 @@ def vrs_vcf_index() -> str:
 
     assert (
         "PHENOTYPE_TABLE" in os.environ
-    ), "No VRS VCF index found, see tests/fixtures/gregor/README.md for setup"
+    ), "No phenotype index found, see tests/fixtures/gregor/README.md for setup"
 
     return os.environ["VRS_VCF_INDEX"]
 

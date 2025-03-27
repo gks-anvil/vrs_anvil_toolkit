@@ -2,7 +2,7 @@ import os
 import pytest
 import subprocess
 
-from ga4gh.va_spec.base.caf_study_result import CohortAlleleFrequencyStudyResult as CAF
+from ga4gh.va_spec.base.core import CohortAlleleFrequencyStudyResult as CAF
 from ga4gh.vrs.extras.translator import AlleleTranslator
 from ga4gh.vrs.dataproxy import create_dataproxy
 from plugin_system.plugin_manager import PluginManager

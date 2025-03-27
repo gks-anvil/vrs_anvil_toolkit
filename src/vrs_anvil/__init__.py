@@ -80,10 +80,10 @@ def caching_allele_translator_factory(
     normalize: bool = True, seqrepo_uri: str | None = None
 ):
     """Return a CachingAlleleTranslator instance with a SeqRepo dataproxy."""
-    if seqrepo_uri is None:
-        if manifest and manifest.seqrepo_uri:
-            seqrepo_uri = manifest.seqrepo_uri
-    dp = create_dataproxy(seqrepo_uri)
+    if manifest is not None:
+        dp = create_dataproxy(seqrepo_uri or manifest.seqrepo_uri)
+    else:
+        dp = create_dataproxy(seqrepo_uri)
     translator = CachingAlleleTranslator(dp)
     translator.normalize = normalize
     return translator
