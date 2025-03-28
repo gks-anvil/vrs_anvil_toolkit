@@ -7,6 +7,7 @@ import zipfile
 
 import psutil
 from diskcache import Cache
+from dotenv import load_dotenv
 from ga4gh.vrs import models as VRS
 from ga4gh.vrs.dataproxy import _DataProxy, create_dataproxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
@@ -16,6 +17,7 @@ from pydantic import BaseModel, model_validator
 import requests
 import yaml
 
+load_dotenv()
 
 _logger = logging.getLogger("vrs_anvil")
 LOGGED_ALREADY = set()

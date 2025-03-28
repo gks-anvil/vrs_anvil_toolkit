@@ -20,6 +20,7 @@ requires-python = ">=3.10"
 description = "Useful tools and methods for applying GA4GH GKS and VRS models on the NHGRI AnVIL platform."
 license = {file = "LICENSE.md"}
 dependencies = [
+    "python-dotenv",
     "ga4gh.vrs[extras]~=2.0.0",
     "diskcache",
     "biocommons.seqrepo",
@@ -34,7 +35,7 @@ dependencies = [
     "psutil",
     # for CAF generation:
     "firecloud",
-    "ga4gh.va_spec==0.2.0a1",
+    "ga4gh.va_spec~=0.2.0",
     "pandas",
     "vrsix==0.1.1",
 ]
