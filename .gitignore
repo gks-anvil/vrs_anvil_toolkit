@@ -164,6 +164,3 @@ settings.json
 
 # workspace
 tmp/
-
-# test stuff
-tests/fixtures/gregor/phenotype.tsv
