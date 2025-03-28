@@ -34,7 +34,7 @@ dependencies = [
     "psutil",
     # for CAF generation:
     "firecloud",
-    "ga4gh.va_spec~=0.2.0a1",
+    "ga4gh.va_spec==0.2.0a1",
     "pandas",
     "vrsix==0.1.1",
 ]
