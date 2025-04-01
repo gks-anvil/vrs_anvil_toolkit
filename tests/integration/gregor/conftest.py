@@ -50,7 +50,7 @@ def vrs_vcf_index() -> str:
 
     assert (
         "PHENOTYPE_TABLE" in os.environ
-    ), "No phenotype index found, see tests/fixtures/gregor/README.md for setup"
+    ), "No phenotype table found, see tests/fixtures/gregor/README.md for setup"
 
     return os.environ["VRS_VCF_INDEX"]
 
