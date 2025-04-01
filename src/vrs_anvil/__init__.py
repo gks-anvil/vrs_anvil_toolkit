@@ -260,7 +260,15 @@ class Manifest(BaseModel):
     """The directory to store intermediate files"""
 
     seqrepo_uri: str | None = None
-    """Description of the available SeqRepo resource. See SeqRepo docs for full spec."""
+    """Description of the available SeqRepo resource.
+
+    Currently accepted URI schemes:
+
+    * seqrepo+file:///path/to/seqrepo/root
+    * seqrepo+:../relative/path/to/seqrepo/root
+    * seqrepo+http://localhost:5000/seqrepo
+    * seqrepo+https://somewhere:5000/seqrepo
+    """
 
     normalize: bool = True
     """Normalize the VRS ids"""

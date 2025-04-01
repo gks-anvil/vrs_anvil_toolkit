@@ -32,9 +32,6 @@ def vrs_id_chr3(chr3_vcf_path):
             return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
 
     raise FileNotFoundError("couldn't find record for vrs_id_solo_alt")
-    # for i, record in enumerate(VariantFile(remote_chry_vcf_path)):
-    #     if i == 10:
-    #         return record.info["VRS_Allele_IDs"][1]  # 1 since 0 is a ref
 
 
 @pytest.fixture
