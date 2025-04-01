@@ -20,6 +20,20 @@ state_directory: "state/"
 # where to store input data like VCF files and a copy of the manifest used
 work_directory: "work/"
 
+# describe location/access to SeqRepo. Uses a URI scheme to declare either
+# file-based or REST-based access.
+#
+# Currently supported schemes:
+# * absolute file location: "seqrepo+file:///path/to/seqrepo/instance"
+# * relative file location: "seqrepo+:../relative/path/to/seqrepo/instance"
+# * REST via HTTP: "seqrepo+http://localhost:5000/seqrepo"
+# * REST via HTTPS: "seqrepo+https://somewhere:5000/seqrepo"
+#
+# See SeqRepo and the SeqRepo REST service READMEs for more:
+# * https://github.com/biocommons/biocommons.seqrepo
+# * https://github.com/biocommons/seqrepo-rest-service
+seqrepo_uri: "seqrepo+file:///usr/local/share/seqrepo/latest"
+
 # Stores the vrs_id and metakb cache if cache_enabled (defaults to cache/)
 cache_directory: "cache/"
 
