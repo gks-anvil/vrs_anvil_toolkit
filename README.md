@@ -98,7 +98,7 @@ nohup vrs_bulk annotate --scatter & # press enter to continue
 vrs_bulk ps
 ```
 
-The command line utility supports Google Cloud URIs and running commands in the background to interop with Terra out-of-the-box. This is described in the CLI usage above. For an example notebook, see `vrs-anvil-demo.ipynb` on the `vrs-anvil` workspace.
+The command line utility supports Google Cloud URIs and running commands in the background to interop with Terra out-of-the-box. This is described in the CLI usage above. For an example notebook, see [here](https://anvil.terra.bio/#workspaces/ga4gh-gks/vrs_anvil/analysis/launch/Querying%20External%20Resources%20with%20VRS.ipynb/).
 
 ## Cohort Allele Frequency Generation
 
