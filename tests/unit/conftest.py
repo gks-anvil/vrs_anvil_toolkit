@@ -41,16 +41,16 @@ def metakb_directory(testing_manifest):
 
 
 @pytest.fixture
-def seqrepo_dir(testing_manifest):
+def seqrepo_uri(testing_manifest: Manifest):
     """Return the seqrepo directory as fixture."""
-    return testing_manifest.seqrepo_directory
+    return testing_manifest.seqrepo_uri
 
 
 @pytest.fixture
-def caching_translator(testing_manifest):
+def caching_translator(testing_manifest: Manifest):
     """Return a single translator instance."""
     return caching_allele_translator_factory(
-        seqrepo_directory=testing_manifest.seqrepo_directory
+        seqrepo_uri=testing_manifest.seqrepo_uri
     )
 
 

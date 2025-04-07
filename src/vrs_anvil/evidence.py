@@ -3,7 +3,7 @@ from pathlib import Path
 import sqlite3
 
 from datetime import datetime
-from ga4gh.va_spec.base.caf_study_result import CohortAlleleFrequencyStudyResult as CAF
+from ga4gh.va_spec.base.core import CohortAlleleFrequencyStudyResult as CAF
 from ga4gh.va_spec.base.core import DataSet, StudyGroup
 from pysam import VariantFile, VariantRecord
 from plugin_system.plugins.base_plugin import BasePlugin
@@ -115,9 +115,9 @@ def get_cohort_allele_frequency(
     )
 
     if phenotype is None:
-        cohort = StudyGroup(id="ALL", label="Overall")
+        cohort = StudyGroup(id="ALL", name="Overall")
     else:
-        cohort = StudyGroup(id=phenotype, label=phenotype)
+        cohort = StudyGroup(id=phenotype, name=phenotype)
 
     ancillary_results = {
         "homozygotes": num_homozygotes,

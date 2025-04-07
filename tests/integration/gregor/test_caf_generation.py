@@ -199,7 +199,7 @@ def test_correct_caf_given_chr3_variant_and_pheno(
 
     # check phenotype is stored in cohort data
     assert phenotype in caf.cohort.id
-    assert phenotype in caf.cohort.label
+    assert phenotype in caf.cohort.name
 
 
 def test_correct_allele_freq_for_multi_alts_chrY_variant(
