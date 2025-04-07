@@ -15,7 +15,7 @@ from vrs_anvil import Manifest, generate_gnomad_ids
 from vrs_anvil.collector import collect_manifest_urls
 from vrs_anvil.translator import Translator, VCFItem
 
-_logger = logging.getLogger("vrs_anvil.annotator")
+_logger = logging.getLogger(__name__)
 
 # enums for metrics
 # TODO: do this for keys across files like "parameters" but also "fmt" and "line"
