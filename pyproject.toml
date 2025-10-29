@@ -63,8 +63,8 @@ Source = "https://github.com/gks-anvil/vrs_anvil_toolkit"
 vrs_bulk = "vrs_anvil.cli:cli"
 
 [build-system]
-requires = ["setuptools>=80.3.0", "setuptools_scm>=8"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools<80.3.0"]
+build-backend = "setuptools.build_meta:__legacy__"
 
 [tool.setuptools]
 include-package-data = true
