@@ -17,6 +17,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip install ".[tests]"
 
       # TODO -- build CI-ready unit tests
@@ -33,7 +34,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: python3 -m pip install ".[dev]"
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install ".[dev]"
 
       - name: Check style
         run: python3 -m flake8 src tests
