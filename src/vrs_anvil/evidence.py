@@ -193,7 +193,6 @@ def get_vcf_row(
     Returns:
         VariantRecord: A Pysam VariantRecord (VCF row)
     """
-
     if "VRS_Allele_IDs" not in vcf.header.info:
         raise KeyError(
             "no VRS_Allele_IDs key in INFO found, "

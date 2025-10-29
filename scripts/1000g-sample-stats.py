@@ -144,7 +144,7 @@ for file_path, evidence in matches_per_file.items():
         print(f"\tallele_id: {allele_id}")
 
         # get study id associated with vrs allele id
-        metakb_response = query_metakb(allele_id, log=True)
+        metakb_response = query_metakb(allele_id)
         if metakb_response is None:
             print(f"no metakb hit for allele {allele_id}\n")
         else:

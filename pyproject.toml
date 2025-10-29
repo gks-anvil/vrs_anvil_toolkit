@@ -21,7 +21,7 @@ description = "Useful tools and methods for applying GA4GH GKS and VRS models on
 license = {file = "LICENSE.md"}
 dependencies = [
     "python-dotenv",
-    "ga4gh.vrs[extras]~=2.0.0",
+    "ga4gh.vrs[extras]>=2.1.3,<3.0",
     "diskcache",
     "biocommons.seqrepo",
     "glom",
@@ -35,9 +35,10 @@ dependencies = [
     "psutil",
     # for CAF generation:
     "firecloud",
-    "ga4gh.va_spec~=0.2.0",
+    "ga4gh.va_spec>=0.2.0",
     "pandas",
     "vrsix==0.1.1",
+    "metakb @ git+https://github.com/cancervariants/metakb.git@a5d3ecad86b5ad082655fe99382af221cc78c111#subdirectory=server",
 ]
 dynamic = ["version"]
 

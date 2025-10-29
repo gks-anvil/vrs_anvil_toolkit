@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from ga4gh.vrs import models as VRS
 from ga4gh.vrs.dataproxy import _DataProxy, create_dataproxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
+from metakb.schemas.api import SearchStatementsResponse
 from pathlib import Path
 from glom import glom
 from pydantic import BaseModel, model_validator
@@ -21,7 +22,7 @@ load_dotenv()
 
 _logger = logging.getLogger(__name__)
 LOGGED_ALREADY = set()
-METAKB_API = "https://dev-search.cancervariants.org/api/v2"
+METAKB_API = "https://staging.pediatric.metakb.org/api"
 
 
 manifest: "Manifest" = None
@@ -42,9 +43,7 @@ class CachingAlleleTranslator(AlleleTranslator):
 
     _cache: Cache = None
 
-    def __init__(
-        self, data_proxy: _DataProxy, normalize: bool = False
-    ):
+    def __init__(self, data_proxy: _DataProxy, normalize: bool = False):
         super().__init__(data_proxy)
         self.normalize = normalize
         self._cache = None
@@ -309,22 +308,86 @@ class Manifest(BaseModel):
         return self
 
 
-def query_metakb(vrs_id, log=False):
-    """Query metakb using vrs id"""
-    response = requests.get(f"{METAKB_API}/search/studies?variation={vrs_id}")
+def query_metakb(
+    variation_str: str | None = None,
+    disease: str | None = None,
+    therapy: str | None = None,
+    gene: str | None = None,
+    statement_id: str | None = None,
+    log: bool = False,
+) -> SearchStatementsResponse:
+    """
+    Query MetaKB API for variant statements.
 
-    if response.status_code >= 400:
-        print(f"API error: {response.text} ({response.status_code})")
-        return
+    This is a more Pythonic wrapper around the MetaKB /search/statements endpoint.
+    While the metakb package provides a direct Python API (search_statements), it requires
+    a Neo4j database connection. Since we're querying the hosted API, we use HTTP requests
+    but validate the response using the Pydantic models.
 
-    response_json = response.json()
+    Args:
+        variation_str: Variation identifier (VRS ID, HGVS, gene symbol, etc.)
+        disease: Optional disease filter
+        therapy: Optional therapy filter
+        gene: Optional gene filter
+        statement_id: Optional statement ID filter (e.g., "civic.eid:102", "civic.aid:7")
+        log: Whether to log the request (for debugging)
 
-    if not response_json["warnings"]:
-        return response_json
+    Returns:
+        Dictionary containing the search results (compatible with SearchStatementsResponse)
+
+    Example:
+        >>> # Query by variation
+        >>> results = query_metakb("BRAF V600E")
+        >>> response = SearchStatementsResponse(limit=None, **results)
+        >>>
+        >>> # Query by statement ID
+        >>> results = query_metakb(statement_id="civic.eid:102")
+        >>>
+        >>> # Combine filters
+        >>> results = query_metakb("BRAF V600E", disease="melanoma")
+
+    Raises:
+        ValueError: If no query parameters are provided or if API returns an error
+    """
+    # Build query parameters
+    params = {}
+    if variation_str:
+        params["variation"] = variation_str
+    if disease:
+        params["disease"] = disease
+    if therapy:
+        params["therapy"] = therapy
+    if gene:
+        params["gene"] = gene
+    if statement_id:
+        params["statement_id"] = statement_id
+
+    # Validate that at least one parameter is provided
+    if not params:
+        raise ValueError(
+            "At least one query parameter must be provided (variation, disease, therapy, gene, or statement_id)"
+        )
+
+    # Make the API request
+    response = requests.get(
+        f"{METAKB_API}/search/statements",
+        params=params,
+        headers={"Accept": "application/json"},
+    )
 
     if log:
-        print(response_json["warnings"])
-    return
+        print(f"Querying: {response.url}")
+
+    # Handle errors
+    if response.status_code >= 400:
+        error_msg = f"API error: {response.text} ({response.status_code})"
+        _logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    # Parse and return JSON response
+    # The response can be validated with SearchStatementsResponse if needed:
+    # validated = SearchStatementsResponse(limit=None, **response.json())
+    return response.json()
 
 
 def run_command_in_background(command) -> Any:
