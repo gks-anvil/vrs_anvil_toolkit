@@ -34,7 +34,8 @@ dependencies = [
     "google-cloud-storage",
     "psutil",
     # for CAF generation:
-    "firecloud",
+    "setuptools<80.3.0",
+    "firecloud @ git+https://github.com/nsoranzo/fiss.git@pin_setuptools",
     "ga4gh.va_spec>=0.2.0",
     "pandas",
     "vrsix==0.1.1",
@@ -63,7 +64,7 @@ Source = "https://github.com/gks-anvil/vrs_anvil_toolkit"
 vrs_bulk = "vrs_anvil.cli:cli"
 
 [build-system]
-requires = ["setuptools<80.3.0"]
+requires = ["setuptools<70", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta:__legacy__"
 
 [tool.setuptools]
