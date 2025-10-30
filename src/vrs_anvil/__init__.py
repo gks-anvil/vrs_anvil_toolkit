@@ -22,7 +22,7 @@ load_dotenv()
 
 _logger = logging.getLogger(__name__)
 LOGGED_ALREADY = set()
-METAKB_API = "https://staging.pediatric.metakb.org/api"
+METAKB_API = "https://pediatric.metakb.org/api"
 
 
 manifest: "Manifest" = None
@@ -374,9 +374,6 @@ def query_metakb(
         params=params,
         headers={"Accept": "application/json"},
     )
-
-    if log:
-        print(f"Querying: {response.url}")
 
     # Handle errors
     if response.status_code >= 400:
