@@ -34,7 +34,6 @@ dependencies = [
     "google-cloud-storage",
     "psutil",
     # for CAF generation:
-    "metakb @ git+https://github.com/cancervariants/metakb.git@a5d3ecad86b5ad082655fe99382af221cc78c111#subdirectory=server",
     "firecloud @ git+https://github.com/nsoranzo/fiss.git@pin_setuptools",
     "ga4gh.va_spec>=0.2.0",
     "pandas",

@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 from ga4gh.vrs import models as VRS
 from ga4gh.vrs.dataproxy import _DataProxy, create_dataproxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
-from metakb.schemas.api import SearchStatementsResponse
 from pathlib import Path
 from glom import glom
 from pydantic import BaseModel, model_validator
@@ -315,7 +314,7 @@ def query_metakb(
     gene: str | None = None,
     statement_id: str | None = None,
     log: bool = False,
-) -> SearchStatementsResponse:
+) -> dict:
     """
     Query MetaKB API for variant statements.
 
@@ -336,15 +335,17 @@ def query_metakb(
         Dictionary containing the search results (compatible with SearchStatementsResponse)
 
     Example:
-        >>> # Query by variation
-        >>> results = query_metakb("BRAF V600E")
-        >>> response = SearchStatementsResponse(limit=None, **results)
+        >>> # Query by freetext variation
+        >>> results = query_metakb(variation_str="BRAF V600E")
+        >>>
+        >>> # Query by VRS ID
+        >>> results = query_metakb(variation_str="ga4gh:VA.j4XnsLZcdzDIYa5pvvXM7t1wn9OITr0L")
         >>>
         >>> # Query by statement ID
         >>> results = query_metakb(statement_id="civic.eid:102")
         >>>
         >>> # Combine filters
-        >>> results = query_metakb("BRAF V600E", disease="melanoma")
+        >>> results = query_metakb(variation_str="BRAF V600E", disease="melanoma")
 
     Raises:
         ValueError: If no query parameters are provided or if API returns an error
