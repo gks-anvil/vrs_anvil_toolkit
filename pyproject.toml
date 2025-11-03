@@ -21,7 +21,7 @@ description = "Useful tools and methods for applying GA4GH GKS and VRS models on
 license = {file = "LICENSE.md"}
 dependencies = [
     "python-dotenv",
-    "ga4gh.vrs[extras]~=2.0.0",
+    "ga4gh.vrs[extras]>=2.1.3,<3.0",
     "diskcache",
     "biocommons.seqrepo",
     "glom",
@@ -33,9 +33,8 @@ dependencies = [
     "tqdm",
     "google-cloud-storage",
     "psutil",
-    # for CAF generation:
-    "firecloud",
-    "ga4gh.va_spec~=0.2.0",
+    # for cohort allele frequency generation:
+    "ga4gh.va_spec>=0.2.0",
     "pandas",
     "vrsix==0.1.1",
 ]
@@ -62,8 +61,8 @@ Source = "https://github.com/gks-anvil/vrs_anvil_toolkit"
 vrs_bulk = "vrs_anvil.cli:cli"
 
 [build-system]
-requires = ["setuptools>=64", "setuptools_scm>=8"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools<70", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta:__legacy__"
 
 [tool.setuptools]
 include-package-data = true

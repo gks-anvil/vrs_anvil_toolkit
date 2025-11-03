@@ -111,6 +111,8 @@ Given a variant and an optional phenotype of interest, get aggregated allele fre
   - genotyping laid out per-sample
 - Precomputed VRS-VCF index (created using [vrsix](https://github.com/gks-anvil/vrsix))
   - this enables efficient retrieval of VCF row by VRS ID
+- `pip install firecloud --no-build`
+  - not included in toolkit package, see [GitHub issue](https://github.com/broadinstitute/fiss/issues/192)
 - [Optional] Phenotype of interest to specify subcohort
 - [Optional] Plugins for project-specific transformations (see [here](README.md#plugins-for-unique-data-inputs) for more info)
 

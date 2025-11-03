@@ -15,7 +15,7 @@ def test_gregor_plugin_creates_correct_phenotype_index(
     vcf = VariantFile(chrY_vcf_path)
     assert "VRS_Allele_IDs" in vcf.header.info, (
         "no VRS_Allele_IDs key in INFO found, "
-        "please ensure that this is an VRS sannotated VCF"
+        "please ensure that this is an VRS annotated VCF"
     )
 
     for record in vcf.fetch():
