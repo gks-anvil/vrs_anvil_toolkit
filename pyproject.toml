@@ -33,11 +33,6 @@ dependencies = [
     "tqdm",
     "google-cloud-storage",
     "psutil",
-    # for CAF generation:
-    "firecloud @ git+https://github.com/nsoranzo/fiss.git@pin_setuptools",
-    "ga4gh.va_spec>=0.2.0",
-    "pandas",
-    "vrsix==0.1.1",
 ]
 dynamic = ["version"]
 
@@ -49,6 +44,13 @@ dev = [
     "flake8",
     "black",
     "pre-commit>=4.0.1",
+]
+# for phenotype / allele frequency generation:
+phenos = [
+    "firecloud @ git+https://github.com/nsoranzo/fiss.git@pin_setuptools",
+    "ga4gh.va_spec>=0.2.0",
+    "pandas",
+    "vrsix==0.1.1",
 ]
 
 [project.urls]
@@ -62,7 +64,7 @@ Source = "https://github.com/gks-anvil/vrs_anvil_toolkit"
 vrs_bulk = "vrs_anvil.cli:cli"
 
 [build-system]
-requires = ["setuptools<70", "setuptools_scm>=8"]
+requires = ["setuptools<70", "setuptools_scm>=8", "firecloud"]
 build-backend = "setuptools.build_meta:__legacy__"
 
 [tool.setuptools]
