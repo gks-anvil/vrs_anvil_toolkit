@@ -37,7 +37,6 @@ Workflow looks like this
   * For each cohort, use those params to slice back into the original VCFs with tabix, returning sample counts
   * Add up counts, structure as VA-Spec CAF, and return
 
-
 ## Consequences
 
 **Synthetic coverage calculation**: BED files aren't always available. One conservative approach could be to produce an artificial BED file based on called variants (+/- some # of BPs?).

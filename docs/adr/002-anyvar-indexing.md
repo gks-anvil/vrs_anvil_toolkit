@@ -19,8 +19,6 @@ So, we'd like to consider alternatives. For the index itself, we want to support
 1) Individual allele lookup by VRS ID, joined w/ associated source URI(s)
 2) Genomic range-based lookup (i.e. retrieve all alleles with coordinates between `(start, end)`)
 
-
-
 ## Decision [proposed]
 
 Use [AnyVar](https://github.com/biocommons/anyvar/) to ingest variants. Use the already-supported duckdb backend for the index.
@@ -39,7 +37,6 @@ Use [AnyVar](https://github.com/biocommons/anyvar/) to ingest variants. Use the 
 * A critical part of the workflow is packaging in some kind of URI + file positioning to point back to the storage location of the original VCF to get sample counts for the allele. AnyVar doesn't have a particular efficient way of annotating this; we could include URI as an extension on every single allele, but that would represent a considerable size increase for a very simple (and almost always uniform or near-uniform) annotation.
   * Not unthinkable that we could build a solution into AnyVar for this, if it makes sense for other corners of the AnyVar userbase too
   * We could also inject this into the anyvar table within the vrs-anvil toolkit; it would still enable VRS-AnVIL Toolkit-authored indices to be used in other AnyVar contexts but would limit utility in the other direction
-
 
 ## Consequences
 
