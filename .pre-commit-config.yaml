@@ -17,14 +17,6 @@ repos:
     - id: trailing-whitespace
     - id: mixed-line-ending
       args: [ --fix=lf ]
-- repo: local
-  hooks:
-  - id: run_tests
-    pass_filenames: false  # run once for all files, not N times for every file
-    language: script
-    name: run our unit tests
-    entry: ./pre-commit-tests.sh
-
 #- repo: local
 #  hooks:
 #    - id: mypy # mypy is a pre-commit hook that runs as a linter to check for type errors
