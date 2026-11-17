@@ -1,36 +1,30 @@
 repos:
-
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
-  hooks:
-    - id: debug-statements #Check for debugger imports and breakpoint() in python files
-    - id: check-ast #Simply check whether files parse as valid python
-    - id: fix-byte-order-marker #removes UTF-8 byte order marker
-    - id: check-json
-    - id: detect-private-key # detect-private-key is not in repo
-    - id: check-yaml
-    - id: check-added-large-files
-      args: [--maxkb=5120]
-    - id: check-shebang-scripts-are-executable
-    - id: check-case-conflict #Check for files with names that would conflict on a case-insensitive filesystem like MacOS HFS+ or Windows FAT
-    - id: end-of-file-fixer #Makes sure files end in a newline and only a newline
-    - id: trailing-whitespace
-    - id: mixed-line-ending
-      args: [ --fix=lf ]
-- repo: local
-  hooks:
-  - id: run_tests
-    pass_filenames: false  # run once for all files, not N times for every file
-    language: script
-    name: run our unit tests
-    entry: ./pre-commit-tests.sh
-
-#- repo: local
-#  hooks:
-#    - id: mypy # mypy is a pre-commit hook that runs as a linter to check for type errors
-#      name: mypy
-#      entry: mypy
-#      language: system
-#      types: [python]
-#      exclude: ^venv/ ^.git/ ^.vscode/ ^.DS_Store
-minimum_pre_commit_version: 4.0.1
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0  # pre-commit-hooks version
+    hooks:
+      - id: detect-aws-credentials
+        args: [ --allow-missing-credentials ]
+  - repo: builtin
+    hooks:
+      - id: check-yaml
+      - id: check-shebang-scripts-are-executable
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args: ['--maxkb=1500']
+      - id: check-case-conflict
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: mixed-line-ending
+        args: [ --fix=lf ]
+      - id: check-merge-conflict
+      - id: detect-private-key
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.4  # ruff version
+    hooks:
+      - id: ruff-format
+      - id: ruff-check
+        args: [ --fix, --exit-non-zero-on-fix ]
+minimum_prek_version: 0.2.23

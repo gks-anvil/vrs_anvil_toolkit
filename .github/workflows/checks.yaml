@@ -2,59 +2,57 @@ name: checks
 on: [push, pull_request]
 jobs:
   test:
-    name: test build py${{ matrix.python-version }}
+    name: {{ "test py${{ matrix.python-version }}" }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "${{ matrix.python-version }}"
+          python-version: {{ "${{ matrix.python-version }}" }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
       - name: Install dependencies
-        run: python3 -m pip install ".[dev]"
+        run: uv sync --extra tests
 
-      # TODO -- build CI-ready unit tests
+      - name: Run tests
+        run: uv run pytest
 
   lint:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
       - name: Install dependencies
-        run: python3 -m pip install ".[dev]"
+        run: uv sync --extra dev
 
       - name: Check style
-        run: python3 -m flake8 src tests
+        run: uv run ruff check && uv run ruff format --check
 
   precommit_hooks:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        cmd:
-          - "check-ast"
-          - "debug-statements"
-          - "end-of-file-fixer"
-          - "trailing-whitespace"
-          - "mixed-line-ending"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - uses: j178/prek-action@v1
         with:
-          python-version: 3.12
-
-      - uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: ${{ matrix.cmd }} --all-files
+          extra_args: '--all-files --skip "ruff-format" --skip "ruff-check"'
