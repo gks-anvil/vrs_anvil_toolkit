@@ -23,6 +23,8 @@ So, we'd like to consider alternatives. For the index itself, we want to support
 
 Use [AnyVar](https://github.com/biocommons/anyvar/) to ingest variants. Use the already-supported duckdb backend for the index.
 
+The ingest workflow should accept joint callsets or dispersed VCF/gVCF files, reuse existing VRS identifiers when available, and compute them when absent. Annotation and indexing should remain independently usable as well as combinable in one pass.
+
 **Benefits**
 
 * Enables workflow consolidation -- AnyVar can annotate the dataset VCFs *and* build an index simultaneously
@@ -40,5 +42,13 @@ Use [AnyVar](https://github.com/biocommons/anyvar/) to ingest variants. Use the 
 
 ## Consequences
 
-* Need to do some building in the vrs-anvil toolkit itself, both to consolidate index construction and
+* Need to do some building in the vrs-anvil toolkit itself, both to consolidate index construction and to expose a shared index schema/interface for producers and consumers
 * Update existing annotator/index workflows -- we can now do this in a single pass
+* Evaluate storage/download costs against query performance, including concurrent source-file dereferencing for large synthetic cohorts. The physical representation of source mappings and index compatibility/migration policy still need definition.
+
+## Supporting notes
+
+* [Workflow notes](../notes/notes.md): independent/combined annotation and indexing, and original-coordinate dereferencing
+* [Index plans](../notes/index_plans.md): provenance, query requirements, and reusable component indices
+* [AnVIL proposal](../notes/anvil_grant.md), Aim 1.2: existing-ID reuse, dispersed VCF inputs, and concurrent dereferencing
+* [GREGoR proposal](../notes/gregor_grant.md), Aim 1: participant mappings and index import/merge/export
