@@ -1,3 +1,0 @@
-setuptools<70
-setuptools_scm>=8
-firecloud
