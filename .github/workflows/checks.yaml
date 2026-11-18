@@ -21,7 +21,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --extra tests
+        run: uv sync --group tests
 
       - name: Run tests
         run: uv run pytest
@@ -43,7 +43,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --group dev
 
       - name: Check style
         run: uv run ruff check && uv run ruff format --check
